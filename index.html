@@ -1,1553 +1,348 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Valentina – Calculs & Logique (FR/NL)</title>
-  <style>
-    :root{
-      --bg0:#070a14; --bg1:#0b1020;
-      --card:rgba(255,255,255,.06);
-      --card2:rgba(255,255,255,.045);
-      --text:#eef1ff;
-      --muted:rgba(238,241,255,.72);
-      --line:rgba(255,255,255,.10);
-      --shadow:0 12px 40px rgba(0,0,0,.35);
-      --accent:#4c6fff;
-      --accent2:#8a5bff;
-      --ok:#35d07f; --bad:#ff5b6e; --warn:#ffcc66;
-      --radius:18px; --radius2:14px;
-      --pad:16px; --pad2:12px;
-      --font:system-ui,-apple-system,Segoe UI,Roboto,Arial;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; color:var(--text); font-family:var(--font); min-height:100vh;
-      background:
-        radial-gradient(1200px 520px at 18% 10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%),
-        radial-gradient(900px 460px at 85% 0%, color-mix(in srgb, var(--accent2) 16%, transparent), transparent 60%),
-        radial-gradient(850px 520px at 70% 95%, rgba(53,208,127,.10), transparent 55%),
-        linear-gradient(160deg, var(--bg0), var(--bg1));
-    }
-    .topbar{
-      position:sticky; top:0; z-index:20;
-      background:linear-gradient(180deg, rgba(7,10,20,.92), rgba(7,10,20,.55));
-      backdrop-filter: blur(10px);
-      border-bottom:1px solid var(--line);
-    }
-    .topbar .inner{
-      max-width:1150px; margin:0 auto; padding:14px 18px;
-      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
-    }
-    .brand{display:flex;flex-direction:column;gap:2px}
-    .title{font-size:18px;font-weight:950;letter-spacing:.2px}
-    .subtitle{font-size:12px;color:var(--muted)}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .pill{
-      display:inline-flex;align-items:center;gap:8px;
-      padding:9px 12px;border-radius:999px;border:1px solid var(--line);
-      background:rgba(255,255,255,.05); font-size:12px; color:var(--muted);
-      white-space:nowrap;
-    }
-    .dot{width:8px;height:8px;border-radius:999px;background:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent)}
-    button{
-      border:1px solid var(--line);
-      color:var(--text);
-      background:rgba(255,255,255,.05);
-      border-radius:14px;
-      padding:10px 12px;
-      font-weight:900;
-      cursor:pointer;
-      transition:.15s transform ease, .15s background ease, .15s border-color ease;
-      user-select:none;
-    }
-    button:hover{transform:translateY(-1px); border-color:rgba(255,255,255,.18); background:rgba(255,255,255,.08)}
-    button:active{transform:translateY(0)}
-    .btnPrimary{
-      background:linear-gradient(135deg, color-mix(in srgb, var(--accent) 92%, #fff 0%), color-mix(in srgb, var(--accent2) 82%, #fff 0%));
-      border-color:rgba(255,255,255,.18);
-      box-shadow:0 10px 25px color-mix(in srgb, var(--accent) 22%, transparent);
-    }
-    .btnGhost{background:rgba(255,255,255,.04)}
-    .wrap{max-width:1150px;margin:0 auto;padding:18px}
-    .grid{display:grid;gap:12px}
-    .panel{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      box-shadow:var(--shadow);
-      padding:var(--pad);
-      overflow:hidden;
-    }
-    .panelTitle{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}
-    .panelTitle h2{margin:0;font-size:14px;font-weight:950;letter-spacing:.2px}
-    .panelTitle .meta{font-size:12px;color:var(--muted)}
-    .divider{height:1px;background:var(--line);margin:14px 0}
-
-    /* ===== Dashboard cards ===== */
-    .cards{
-      display:grid;
-      grid-template-columns:repeat(3, 1fr);
-      gap:12px;
-    }
-    @media (max-width:950px){ .cards{grid-template-columns:repeat(2, 1fr)} }
-    @media (max-width:650px){ .cards{grid-template-columns:1fr} }
-    .card{
-      background:var(--card2);
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:14px;
-      display:flex;
-      flex-direction:column;
-      gap:10px;
-      min-height:170px;
-    }
-    .cardHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-    .cardTitle{font-weight:950;font-size:15px}
-    .tag{
-      font-size:11px;font-weight:950;
-      padding:7px 10px;border-radius:999px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      color:rgba(238,241,255,.82);
-      white-space:nowrap;
-    }
-    .cardDesc{font-size:12px;color:var(--muted);line-height:1.35}
-    .miniStats{display:flex;gap:8px;flex-wrap:wrap}
-    .miniStats .pill{padding:7px 10px;font-size:11px}
-    .cardActions{margin-top:auto;display:flex;gap:10px;flex-wrap:wrap}
-
-    /* ===== Session view ===== */
-    .hidden{display:none !important}
-    .kpis{
-      display:grid;
-      grid-template-columns:repeat(5, 1fr);
-      gap:10px;
-    }
-    @media (max-width:950px){ .kpis{grid-template-columns:repeat(2, 1fr)} }
-    .kpi{
-      background:var(--card2);
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:12px;
-      display:flex;flex-direction:column;gap:6px;
-    }
-    .kpi .label{font-size:12px;color:var(--muted);font-weight:950}
-    .kpi .value{font-size:16px;font-weight:1000}
-    .kpi .value.ok{color:var(--ok)} .kpi .value.bad{color:var(--bad)}
-
-    .q{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:var(--pad);
-      box-shadow:var(--shadow);
-    }
-    .qhead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
-    .qtitle{font-size:16px;font-weight:1000}
-    .qmeta{font-size:12px;color:var(--muted)}
-    .answerRow{
-      display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;
-    }
-    .answerRow input{
-      flex:1; min-width:240px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(0,0,0,.18);
-      color:var(--text);
-      padding:12px;
-      font-size:15px;
-      font-weight:900;
-      outline:none;
-    }
-    .badge{
-      padding:8px 10px;border-radius:999px;border:1px solid var(--line);
-      background:rgba(255,255,255,.05);
-      font-size:12px;font-weight:1000
-    }
-    .badge.ok{border-color:rgba(53,208,127,.35); color:var(--ok)}
-    .badge.bad{border-color:rgba(255,91,110,.35); color:var(--bad)}
-    details{
-      margin-top:10px;
-      border-radius:14px;
-      border:1px solid var(--line);
-      background:rgba(255,255,255,.04);
-      padding:10px 12px;
-    }
-    summary{cursor:pointer;font-weight:1000;color:rgba(238,241,255,.92)}
-    .content{margin-top:8px;font-size:13px;line-height:1.5;color:rgba(238,241,255,.86)}
-    .callout{
-      margin-top:10px;
-      border-radius:14px;
-      border:1px dashed rgba(255,255,255,.18);
-      background:rgba(0,0,0,.12);
-      padding:10px 12px;
-      font-size:12px;color:var(--muted)
-    }
-
-    /* ===== Theme drawer ===== */
-    .drawerBack{
-      position:fixed; inset:0; z-index:80;
-      background:rgba(0,0,0,.55);
-      display:none; align-items:flex-end; justify-content:center;
-      padding:14px;
-    }
-    .drawer{
-      width:min(820px, 100%);
-      background:linear-gradient(180deg, rgba(18,26,51,.96), rgba(10,15,35,.92));
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:22px;
-      box-shadow:0 20px 70px rgba(0,0,0,.55);
-      padding:16px;
-    }
-    .drawerHead{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
-    .drawerHead h3{margin:0;font-size:16px;font-weight:1000}
-    .drawerGrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px}
-    @media (max-width:900px){.drawerGrid{grid-template-columns:1fr}}
-    .presetRow{display:flex;gap:10px;flex-wrap:wrap}
-    .presetRow button{padding:10px 12px}
-
-    /* ===== Modal welcome ===== */
-    .modalBack{
-      position:fixed; inset:0; z-index:100;
-      background:rgba(0,0,0,.55);
-      display:none; align-items:center; justify-content:center;
-      padding:18px;
-    }
-    .modal{
-      width:min(560px, 100%);
-      background:linear-gradient(180deg, rgba(18,26,51,.96), rgba(10,15,35,.92));
-      border:1px solid rgba(255,255,255,.14);
-      border-radius:22px;
-      box-shadow:0 20px 70px rgba(0,0,0,.55);
-      padding:18px;
-    }
-    .modal h3{margin:0 0 6px 0; font-size:18px; font-weight:1000}
-    .modal p{margin:0 0 12px 0; color:var(--muted); font-size:13px; line-height:1.4}
-    .modalRow{display:flex;gap:10px;flex-wrap:wrap}
-    .modalRow > *{flex:1}
-    .smallNote{font-size:12px;color:var(--muted);margin-top:10px}
-  </style>
+  <title>Valentina – Premium (FR/NL)</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
 </head>
 
 <body>
   <div class="topbar">
     <div class="inner">
       <div class="brand">
-        <div class="title" id="ui_title">Valentina – Calculs & Logique</div>
-        <div class="subtitle" id="ui_subtitle">Choisis un module. Chaque module = mini tableau de bord + défis.</div>
+        <div class="title" id="ui_title">Valentina – Entraînement premium</div>
+        <div class="subtitle" id="ui_subtitle">Maths • Logique • Scénarios — avec records, thèmes et explications.</div>
       </div>
       <div class="actions">
-        <span class="pill"><span class="dot"></span><span id="ui_userPill">Utilisateur: Valentina</span></span>
-        <span class="pill" id="pillRecord">🏆 Record: <b id="bestScoreTxt">—</b></span>
-        <span class="pill" id="pillXP">✨ XP: <b id="xpTxt">0</b></span>
-        <span class="pill" id="pillStreak">🔥 Streak: <b id="streakTxt">0</b></span>
-        <button id="langBtn" class="btnGhost">FR → NL</button>
-        <button id="themeBtn" class="btnGhost">Thème</button>
-        <button id="homeBtn" class="btnGhost hidden">Dashboard</button>
+        <span class="pill"><span class="dot"></span><span id="ui_userPill">Utilisateur : Valentina</span></span>
+        <span class="pill">🏆 <span id="ui_bestPill">Record</span>: <b id="bestAllPill">0%</b></span>
+        <span class="pill">🔥 <span id="ui_streakPill">Streak</span>: <b id="streakPill">0</b></span>
+        <button id="langBtn">FR → NL</button>
+        <span class="pill xpPill">
+          Lvl <b id="levelPill">1</b>
+          <div class="xpBar">
+            <div id="xpBarInner"></div>
+          </div>
+        </span>
+        <button id="themeBtn">Thème</button>
+        <button id="homeBtn" class="btnPrimary">Dashboard</button>
       </div>
     </div>
   </div>
 
   <div class="wrap">
+    <div id="errorBar" class="errorBar"></div>
 
-    <!-- DASHBOARD -->
-    <div id="dashboardView" class="grid">
-
+    <!-- HOME -->
+    <div id="viewHome">
       <div class="panel">
-        <div class="panelTitle">
-          <h2 id="ui_dashTitle">Dashboard</h2>
-          <div class="meta" id="ui_dashMeta">3 univers: Maths • Logique • Scénarios. Choisis un module pour commencer.</div>
+        <div class="sectionTitle">
+          <h2 id="ui_overviewTitle">Aperçu</h2>
+          <div class="meta" id="ui_overviewMeta">3 univers : Maths • Logique • Scénarios. Choisis un module.</div>
         </div>
-        <div class="divider"></div>
-        <div class="cards" id="moduleCards"></div>
-      </div>
-
-      <div class="panel">
-        <div class="panelTitle">
-          <h2 id="ui_historyTitle">Historique & motivation</h2>
-          <div class="meta" id="ui_historyMeta">On garde les meilleurs scores pour te motiver.</div>
-        </div>
-        <div class="divider"></div>
-        <div id="historyList" class="grid"></div>
-      </div>
-
-    </div>
-
-    <!-- SESSION -->
-    <div id="sessionView" class="grid hidden">
-      <div class="panel">
-        <div class="panelTitle">
-          <h2 id="sessionTitle">Module</h2>
-          <div class="meta" id="sessionMeta">Réponds, puis corrige. Lis les méthodes pour comprendre.</div>
-        </div>
-
         <div class="divider"></div>
 
         <div class="kpis">
-          <div class="kpi"><div class="label" id="ui_kpiTotal">Questions</div><div class="value" id="kpiTotal">0</div></div>
-          <div class="kpi"><div class="label" id="ui_kpiOk">Correct</div><div class="value ok" id="kpiOk">0</div></div>
-          <div class="kpi"><div class="label" id="ui_kpiBad">Incorrect</div><div class="value bad" id="kpiBad">0</div></div>
-          <div class="kpi"><div class="label" id="ui_kpiTime">Temps</div><div class="value" id="kpiTime">0:00</div></div>
-          <div class="kpi"><div class="label" id="ui_kpiBest">Meilleur</div><div class="value" id="kpiBest">—</div></div>
+          <div class="kpi">
+            <div class="label" id="ui_kpi_best">Meilleur score (tous)</div>
+            <div class="value ok" id="kpiBest">0%</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_kpi_streak">Série (jours)</div>
+            <div class="value" id="kpiStreak">0</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_kpi_sessions">Sessions</div>
+            <div class="value" id="kpiSessions">0</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_kpi_badges">Badges</div>
+            <div class="value" id="kpiBadges">0</div>
+          </div>
         </div>
 
         <div class="divider"></div>
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <label style="flex:1;min-width:220px">
-            <span id="ui_countLbl">Nombre d’exercices</span>
-            <select id="count">
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="30">30</option>
-            </select>
-          </label>
-
-          <label style="flex:1;min-width:220px">
-            <span id="ui_maxLbl">Valeur max</span>
-            <input id="maxVal" type="number" min="50" max="10000" step="10" value="10000" />
-          </label>
-
-          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
-            <button id="newSetBtn" class="btnPrimary">Nouvelle série</button>
-            <button id="checkBtn" class="btnGhost">Corriger</button>
-            <button id="retryWrongBtn" class="btnGhost" disabled>Refaire les erreurs</button>
-          </div>
-        </div>
-
-        <div class="callout" id="ui_hintGlobal">
-          💡 Conseil: d’abord une estimation (arrondir), puis la méthode “décomposer/recomposer”. Ça rend tout plus simple.
+        <div class="cards" id="moduleCards">
+          <!-- Filled by JS (guaranteed) -->
         </div>
       </div>
 
-      <div id="questions" class="grid"></div>
+      <div class="panel">
+        <div class="sectionTitle">
+          <h2 id="ui_historyTitle">Historique & motivation</h2>
+          <div class="meta" id="ui_historyMeta">On garde les dernières sessions pour te motiver.</div>
+        </div>
+        <div class="divider"></div>
+        <div class="history" id="historyList"></div>
+      </div>
     </div>
 
+    <!-- MATH -->
+    <div id="viewMath" class="hidden">
+      <div class="panel">
+        <div class="sectionTitle">
+          <h2 id="ui_math_dash">Mathématiques</h2>
+          <div class="meta" id="ui_math_dash_meta">Génère 20–30 exercices + tactiques de division.</div>
+        </div>
+
+        <div class="toolbar">
+          <div class="left">
+            <label class="small" id="ui_countLbl">Exercices</label>
+            <select id="mathCount">
+              <option>10</option>
+              <option selected>20</option>
+              <option>30</option>
+            </select>
+
+            <label class="small" id="ui_maxLbl">Max</label>
+            <input id="mathMax" type="number" min="100" max="10000" step="10" value="10000" />
+
+            <label class="small" id="ui_levelLbl">Niveau</label>
+            <select id="mathLevel">
+              <option value="easy" selected>Facile</option>
+              <option value="mid">Moyen</option>
+              <option value="hard">Difficile</option>
+            </select>
+
+            <label class="small" id="ui_math_modeLbl">Mode</label>
+            <select id="mathMode">
+              <option value="mix" selected>Mix</option>
+              <option value="divfocus">Division (tactiques)</option>
+              <option value="mulfocus">Multiplication</option>
+            </select>
+          </div>
+          <div class="right">
+            <button id="startMath" class="btnPrimary">Démarrer</button>
+            <button id="checkMath">Corriger</button>
+            <button id="retryMath">Refaire erreurs</button>
+            <button id="backFromMath">← Dashboard</button>
+          </div>
+        </div>
+
+        <div class="qList" id="mathList"></div>
+
+        <div class="divider"></div>
+        <div class="kpis" id="mathKpis">
+          <div class="kpi">
+            <div class="label" id="ui_s_score">Score</div>
+            <div class="value ok" id="mathScore">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_ok">Correct</div>
+            <div class="value ok" id="mathOk">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_bad">Incorrect</div>
+            <div class="value bad" id="mathBad">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_best">Record</div>
+            <div class="value" id="mathBest2">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_time">Temps</div>
+            <div class="value" id="mathTimer">00:00</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_best_time">Record temps</div>
+            <div class="value" id="mathBestTime">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOGIC -->
+    <div id="viewLogic" class="hidden">
+      <div class="panel">
+        <div class="sectionTitle">
+          <h2 id="ui_logic_dash">Logique</h2>
+          <div class="meta" id="ui_logic_dash_meta">Suites • Intrus • Règles.</div>
+        </div>
+
+        <div class="toolbar">
+          <div class="left">
+            <label class="small" id="ui_countLbl2">Exercices</label>
+            <select id="logicCount">
+              <option>10</option>
+              <option selected>20</option>
+              <option>30</option>
+            </select>
+
+            <label class="small" id="ui_logic_kindLbl">Type</label>
+            <select id="logicKind">
+              <option value="mix" selected>Mix</option>
+              <option value="sequence">Suite</option>
+              <option value="odd">Intrus</option>
+              <option value="rule">Règle</option>
+            </select>
+          </div>
+          <div class="right">
+            <button id="startLogic" class="btnPrimary">Démarrer</button>
+            <button id="checkLogic">Corriger</button>
+            <button id="retryLogic">Refaire erreurs</button>
+            <button id="backFromLogic">← Dashboard</button>
+          </div>
+        </div>
+
+        <div class="qList" id="logicList"></div>
+
+        <div class="divider"></div>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label" id="ui_s_score2">Score</div>
+            <div class="value ok" id="logicScore">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_ok2">Correct</div>
+            <div class="value ok" id="logicOk">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_bad2">Incorrect</div>
+            <div class="value bad" id="logicBad">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_best2b">Record</div>
+            <div class="value" id="logicBest2">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STORY -->
+    <div id="viewStory" class="hidden">
+      <div class="panel">
+        <div class="sectionTitle">
+          <h2 id="ui_story_dash">Scénarios</h2>
+          <div class="meta" id="ui_story_dash_meta">Problèmes en contexte (piscine, boîtes, école…).</div>
+        </div>
+
+        <div class="toolbar">
+          <div class="left">
+            <label class="small" id="ui_countLbl3">Exercices</label>
+            <select id="storyCount">
+              <option>8</option>
+              <option selected>12</option>
+              <option>20</option>
+            </select>
+
+            <label class="small" id="ui_story_themeLbl">Thème</label>
+            <select id="storyTheme">
+              <option value="mix" selected>Mix</option>
+              <option value="swim">Piscine</option>
+              <option value="boxes">Boîtes</option>
+              <option value="school">École</option>
+              <option value="shop">Magasin</option>
+            </select>
+          </div>
+          <div class="right">
+            <button id="startStory" class="btnPrimary">Démarrer</button>
+            <button id="checkStory">Corriger</button>
+            <button id="retryStory">Refaire erreurs</button>
+            <button id="backFromStory">← Dashboard</button>
+          </div>
+        </div>
+
+        <div class="qList" id="storyList"></div>
+
+        <div class="divider"></div>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label" id="ui_s_score3">Score</div>
+            <div class="value ok" id="storyScore">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_ok3">Correct</div>
+            <div class="value ok" id="storyOk">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_bad3">Incorrect</div>
+            <div class="value bad" id="storyBad">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label" id="ui_s_best3">Record</div>
+            <div class="value" id="storyBest2">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <!-- WELCOME MODAL -->
+  <!-- WELCOME -->
   <div class="modalBack" id="welcomeBack">
     <div class="modal">
-      <h3 id="welcomeTitle">Bonjour Valentina 👋</h3>
-      <p id="welcomeText">On fait une petite série aujourd’hui ? Tu peux battre ton record 🏆</p>
+      <h3 id="ui_welcomeTitle">Bonjour Valentina 👋</h3>
+      <p id="ui_welcomeText">Prête pour une nouvelle session ?</p>
       <div class="modalRow">
-        <label>
-          <span id="ui_nameLbl">Nom</span>
+        <div>
+          <label id="ui_nameLbl">Nom</label>
           <input id="nameInput" type="text" placeholder="Valentina" />
-        </label>
-        <label>
-          <span id="ui_gradeLbl">Niveau</span>
-          <select id="gradeSelect">
-            <option value="easy">Facile</option>
-            <option value="mid" selected>Moyen</option>
-            <option value="hard">Difficile</option>
+        </div>
+        <div>
+          <label id="ui_goalLbl">Objectif (min/jour)</label>
+          <select id="goalSelect">
+            <option>5</option>
+            <option selected>10</option>
+            <option>15</option>
+            <option>20</option>
           </select>
-        </label>
+        </div>
       </div>
-      <div class="smallNote" id="welcomeNote">Astuce: tu peux changer la langue et le thème en haut.</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end;margin-top:12px">
-        <button id="welcomeClose" class="btnPrimary">OK</button>
+      <div class="divider"></div>
+      <div class="modalRow">
+        <button id="welcomeMath" class="btnPrimary">Maths</button>
+        <button id="welcomeLogic">Logique</button>
+        <button id="welcomeStory">Scénarios</button>
       </div>
+      <div class="smallNote" id="ui_welcomeNote">Record et série sont sauvegardés sur cet appareil.</div>
     </div>
   </div>
 
-  <!-- THEME DRAWER -->
-  <div class="drawerBack" id="themeBack">
-    <div class="drawer">
-      <div class="drawerHead">
-        <h3 id="ui_themeTitle">Thème & couleurs</h3>
-        <div style="display:flex;gap:10px;flex-wrap:wrap">
-          <button id="themeClose" class="btnGhost">Fermer</button>
-        </div>
+  <!-- THEME -->
+  <div class="modalBack" id="themeBack">
+    <div class="modal">
+      <h3 id="ui_themeTitle">Thème</h3>
+      <p id="ui_themeText">Choisis un style ou personnalise.</p>
+
+      <div class="presetRow" style="margin-bottom:12px">
+        <div class="preset" data-preset="ocean" style="--p1:#4c6fff;--p2:#00d4ff"></div>
+        <div class="preset" data-preset="violet" style="--p1:#8a5bff;--p2:#ff5bd6"></div>
+        <div class="preset" data-preset="mint" style="--p1:#35d07f;--p2:#4c6fff"></div>
+        <div class="preset" data-preset="sunset" style="--p1:#ff7a59;--p2:#8a5bff"></div>
+        <div class="preset" data-preset="gold" style="--p1:#ffcc66;--p2:#ff5b6e"></div>
       </div>
 
-      <div class="drawerGrid">
-        <div class="panel" style="margin:0;box-shadow:none">
-          <div class="panelTitle">
-            <h2 id="ui_themePick">Couleurs</h2>
-            <div class="meta" id="ui_themePickMeta">Personnalise l’app à ton goût.</div>
-          </div>
-          <div class="divider"></div>
-          <label>Accent
-            <input id="accentPicker" type="color" value="#4c6fff" />
-          </label>
-          <label style="margin-top:10px">Accent 2
-            <input id="accent2Picker" type="color" value="#8a5bff" />
-          </label>
-          <label style="margin-top:10px">Fond
-            <input id="bgPicker" type="color" value="#0b1020" />
-          </label>
-          <div class="help" id="ui_themeHelp">Les changements sont sauvegardés sur cet appareil.</div>
-        </div>
-
-        <div class="panel" style="margin:0;box-shadow:none">
-          <div class="panelTitle">
-            <h2 id="ui_presets">Présets</h2>
-            <div class="meta" id="ui_presetsMeta">Un clic = un style.</div>
-          </div>
-          <div class="divider"></div>
-          <div class="presetRow">
-            <button type="button" data-preset="midnight" class="btnGhost">Midnight</button>
-            <button type="button" data-preset="ocean" class="btnGhost">Ocean</button>
-            <button type="button" data-preset="sunset" class="btnGhost">Sunset</button>
-            <button type="button" data-preset="mint" class="btnGhost">Mint</button>
-          </div>
-          <div class="help" id="ui_presetsHelp">Tu peux ensuite ajuster l’accent comme tu veux.</div>
-        </div>
-
-        <div class="panel" style="margin:0;box-shadow:none">
-          <div class="panelTitle">
-            <h2 id="ui_data">Données</h2>
-            <div class="meta" id="ui_dataMeta">Records, XP, historique…</div>
-          </div>
-          <div class="divider"></div>
-          <button id="clearDataBtn" class="btnGhost" type="button">Effacer records</button>
-          <div class="help" id="ui_dataHelp">Attention: ça supprime les scores sauvegardés.</div>
-        </div>
+      <div class="modalRow">
+        <div><label id="ui_accentLbl">Accent</label><input id="accentPick" type="color" value="#4c6fff" /></div>
+        <div><label id="ui_accent2Lbl">Accent 2</label><input id="accent2Pick" type="color" value="#8a5bff" /></div>
       </div>
+      <div class="modalRow" style="margin-top:10px">
+        <div><label id="ui_bgLbl">Fond (haut)</label><input id="bg0Pick" type="color" value="#070a14" /></div>
+        <div><label id="ui_bg2Lbl">Fond (bas)</label><input id="bg1Pick" type="color" value="#0b1020" /></div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="modalRow">
+        <button id="saveTheme" class="btnPrimary">Enregistrer</button>
+        <button id="closeTheme">Fermer</button>
+      </div>
+      <div class="smallNote" id="ui_themeNote">Sauvegarde locale (pas de compte).</div>
     </div>
   </div>
 
-  <script>
-    // ===============================
-    // i18n FR / NL (no Spanish)
-    // ===============================
-    const I18N = {
-      fr: {
-        title: "Valentina – Calculs & Logique",
-        subtitle: "Choisis un module. Chaque module = mini tableau de bord + défis.",
-        user: "Utilisateur",
-        record: "Record",
-        xp: "XP",
-        streak: "Streak",
-        langBtn: "FR → NL",
-        theme: "Thème",
-        dashboard: "Dashboard",
-        dashTitle: "Dashboard",
-        dashMeta: "3 univers: Maths • Logique • Scénarios. Choisis un module pour commencer.",
-        historyTitle: "Historique & motivation",
-        historyMeta: "On garde les meilleurs scores pour te motiver.",
-        noneYet: "Aucune partie sauvegardée pour le moment.",
-        sessionMeta: "Réponds, puis corrige. Lis les méthodes pour comprendre.",
-        questions: "Questions",
-        correct: "Correct",
-        incorrect: "Incorrect",
-        time: "Temps",
-        best: "Meilleur",
-        count: "Nombre d’exercices",
-        max: "Valeur max",
-        newSet: "Nouvelle série",
-        check: "Corriger",
-        retryWrong: "Refaire les erreurs",
-        globalTip: "💡 Conseil: d’abord une estimation (arrondir), puis la méthode “décomposer/recomposer”. Ça rend tout plus simple.",
-        answer: "Ta réponse",
-        hint: "Indice (simple)",
-        method1: "Méthode 1 — Arrondir puis corriger",
-        method2: "Méthode 2 — Décomposer / recomposer",
-        method3: "Méthode 3 — Vérification rapide",
-        showSolution: "Voir la solution",
-        hideSolution: "Cacher la solution",
-        needOp: "Choisis au moins une option dans ce module.",
-        done: "Terminé !",
-        welcomeTitle: (name)=>`Bonjour ${name} 👋`,
-        welcomeText: "On fait une petite série aujourd’hui ? Tu peux battre ton record 🏆",
-        nameLbl: "Nom",
-        gradeLbl: "Niveau",
-        welcomeNote: "Astuce: tu peux changer la langue et le thème en haut.",
-        ok: "OK",
-        themeTitle: "Thème & couleurs",
-        themePick: "Couleurs",
-        themePickMeta: "Personnalise l’app à ton goût.",
-        presets: "Présets",
-        presetsMeta: "Un clic = un style.",
-        data: "Données",
-        dataMeta: "Records, XP, historique…",
-        clearRecords: "Effacer records",
-        warnClear: "Ça va supprimer l’historique, XP, record. Continuer ?",
-        scoreLine: (ok,total,time)=>`Score: ${ok}/${total} • Temps: ${time}`,
-        moduleTagMath: "Maths",
-        moduleTagLogic: "Logique",
-        moduleTagStory: "Scénarios",
-        // module names
-        m1: "Cijferen ( + − × ÷ )",
-        m2: "Divisibilité & multiples",
-        m3: "Diviser par 5 / 25 / 50 (astuces)",
-        m4: "Suites (logique)",
-        m5: "Intrus & Vrai/Faux",
-        m6: "Scénarios (tickets, boîtes, natation…)",
-        start: "Commencer",
-      },
-      nl: {
-        title: "Valentina – Rekenen & Logica",
-        subtitle: "Kies een module. Elke module = mini dashboard + uitdagingen.",
-        user: "Gebruiker",
-        record: "Record",
-        xp: "XP",
-        streak: "Streak",
-        langBtn: "NL → FR",
-        theme: "Thema",
-        dashboard: "Dashboard",
-        dashTitle: "Dashboard",
-        dashMeta: "3 werelden: Rekenen • Logica • Scenario’s. Kies een module om te starten.",
-        historyTitle: "Geschiedenis & motivatie",
-        historyMeta: "We bewaren je beste scores om je te motiveren.",
-        noneYet: "Nog geen opgeslagen sessies.",
-        sessionMeta: "Antwoord, kijk na. Lees de methodes om het te begrijpen.",
-        questions: "Vragen",
-        correct: "Goed",
-        incorrect: "Fout",
-        time: "Tijd",
-        best: "Beste",
-        count: "Aantal oefeningen",
-        max: "Max. waarde",
-        newSet: "Nieuwe reeks",
-        check: "Nakijken",
-        retryWrong: "Fouten opnieuw",
-        globalTip: "💡 Tip: eerst schatten (afronden), daarna “ontbinden/samenstellen”. Dat maakt het veel makkelijker.",
-        answer: "Jouw antwoord",
-        hint: "Hint (simpel)",
-        method1: "Methode 1 — Afronden en corrigeren",
-        method2: "Methode 2 — Ontbinden / samenstellen",
-        method3: "Methode 3 — Snelle controle",
-        showSolution: "Oplossing tonen",
-        hideSolution: "Oplossing verbergen",
-        needOp: "Kies minstens één optie in deze module.",
-        done: "Klaar!",
-        welcomeTitle: (name)=>`Welkom ${name} 👋`,
-        welcomeText: "Zullen we vandaag een korte reeks doen? Je kan je record breken 🏆",
-        nameLbl: "Naam",
-        gradeLbl: "Niveau",
-        welcomeNote: "Tip: bovenaan kan je taal en thema wijzigen.",
-        ok: "OK",
-        themeTitle: "Thema & kleuren",
-        themePick: "Kleuren",
-        themePickMeta: "Personaliseer de app zoals je wil.",
-        presets: "Presets",
-        presetsMeta: "Eén klik = één stijl.",
-        data: "Data",
-        dataMeta: "Records, XP, geschiedenis…",
-        clearRecords: "Records wissen",
-        warnClear: "Dit wist geschiedenis, XP en record. Doorgaan?",
-        scoreLine: (ok,total,time)=>`Score: ${ok}/${total} • Tijd: ${time}`,
-        moduleTagMath: "Rekenen",
-        moduleTagLogic: "Logica",
-        moduleTagStory: "Scenario’s",
-        // module names
-        m1: "Cijferen ( + − × ÷ )",
-        m2: "Deelbaarheid & veelvouden",
-        m3: "Delen door 5 / 25 / 50 (trucs)",
-        m4: "Reeksen (logica)",
-        m5: "Vreemde eend & Juist/Fout",
-        m6: "Scenario’s (tickets, dozen, zwemmen…)",
-        start: "Start",
-      }
-    };
-
-    let lang = "fr";
-    const t = ()=>I18N[lang];
-
-    // ===============================
-    // Storage helpers
-    // ===============================
-    const KEY = "valentina_app_v1";
-    const defaultState = {
-      name: "Valentina",
-      grade: "mid", // easy/mid/hard
-      theme: { accent:"#4c6fff", accent2:"#8a5bff", bg:"#0b1020" },
-      stats: { best: null, xp:0, streak:0, lastDay:null },
-      history: [] // {ts, moduleId, moduleName, ok,total, timeSec}
-    };
-
-    function loadState(){
-      try{
-        const raw = localStorage.getItem(KEY);
-        if(!raw) return structuredClone(defaultState);
-        const obj = JSON.parse(raw);
-        return { ...structuredClone(defaultState), ...obj,
-          theme: { ...structuredClone(defaultState.theme), ...(obj.theme||{}) },
-          stats: { ...structuredClone(defaultState.stats), ...(obj.stats||{}) },
-          history: Array.isArray(obj.history)? obj.history : []
-        };
-      }catch{ return structuredClone(defaultState); }
-    }
-    function saveState(){ localStorage.setItem(KEY, JSON.stringify(state)); }
-
-    let state = loadState();
-
-    // ===============================
-    // Theme apply
-    // ===============================
-    function applyTheme(){
-      document.documentElement.style.setProperty("--accent", state.theme.accent);
-      document.documentElement.style.setProperty("--accent2", state.theme.accent2);
-      document.documentElement.style.setProperty("--bg1", state.theme.bg);
-      accentPicker.value = state.theme.accent;
-      accent2Picker.value = state.theme.accent2;
-      bgPicker.value = state.theme.bg;
-    }
-
-    // ===============================
-    // UI language apply
-    // ===============================
-    function applyLang(){
-      document.documentElement.lang = lang;
-      ui_title.textContent = t().title;
-      ui_subtitle.textContent = t().subtitle;
-      ui_userPill.textContent = `${t().user}: ${state.name}`;
-      langBtn.textContent = t().langBtn;
-      themeBtn.textContent = t().theme;
-      homeBtn.textContent = t().dashboard;
-
-      ui_dashTitle.textContent = t().dashTitle;
-      ui_dashMeta.textContent = t().dashMeta;
-      ui_historyTitle.textContent = t().historyTitle;
-      ui_historyMeta.textContent = t().historyMeta;
-
-      sessionMeta.textContent = t().sessionMeta;
-      ui_kpiTotal.textContent = t().questions;
-      ui_kpiOk.textContent = t().correct;
-      ui_kpiBad.textContent = t().incorrect;
-      ui_kpiTime.textContent = t().time;
-      ui_kpiBest.textContent = t().best;
-
-      ui_countLbl.textContent = t().count;
-      ui_maxLbl.textContent = t().max;
-      newSetBtn.textContent = t().newSet;
-      checkBtn.textContent = t().check;
-      retryWrongBtn.textContent = t().retryWrong;
-      ui_hintGlobal.textContent = t().globalTip;
-
-      // theme drawer
-      ui_themeTitle.textContent = t().themeTitle;
-      ui_themePick.textContent = t().themePick;
-      ui_themePickMeta.textContent = t().themePickMeta;
-      ui_presets.textContent = t().presets;
-      ui_presetsMeta.textContent = t().presetsMeta;
-      ui_data.textContent = t().data;
-      ui_dataMeta.textContent = t().dataMeta;
-      clearDataBtn.textContent = t().clearRecords;
-
-      // welcome
-      welcomeTitle.textContent = t().welcomeTitle(state.name);
-      welcomeText.textContent = t().welcomeText;
-      ui_nameLbl.textContent = t().nameLbl;
-      ui_gradeLbl.textContent = t().gradeLbl;
-      welcomeNote.textContent = t().welcomeNote;
-      welcomeClose.textContent = t().ok;
-
-      // top pills
-      pillRecord.innerHTML = `🏆 ${t().record}: <b id="bestScoreTxt">${bestText()}</b>`;
-      pillXP.innerHTML = `✨ ${t().xp}: <b id="xpTxt">${state.stats.xp}</b>`;
-      pillStreak.innerHTML = `🔥 ${t().streak}: <b id="streakTxt">${state.stats.streak}</b>`;
-
-      renderModuleCards();
-      renderHistory();
-      renderSessionHeader();
-    }
-
-    function bestText(){
-      if(!state.stats.best) return "—";
-      const b = state.stats.best;
-      return `${b.ok}/${b.total} (${fmtTime(b.timeSec)})`;
-    }
-
-    // ===============================
-    // Modules definition
-    // ===============================
-    const MODULES = [
-      {
-        id:"math_cijferen",
-        tagKey:"moduleTagMath",
-        nameKey:"m1",
-        descFR:"Opérations jusqu’à 10 000. Explications claires (2–3 méthodes).",
-        descNL:"Bewerkingen tot 10 000. Duidelijke uitleg (2–3 methodes).",
-        gen: genMathCijferen
-      },
-      {
-        id:"math_divisibility",
-        tagKey:"moduleTagMath",
-        nameKey:"m2",
-        descFR:"Diviseurs, multiples, divisible par 2/3/4/5/8/9/10. Mini-défis.",
-        descNL:"Delers, veelvouden, deelbaar door 2/3/4/5/8/9/10. Mini-uitdagingen.",
-        gen: genDivisibility
-      },
-      {
-        id:"math_5_25_50",
-        tagKey:"moduleTagMath",
-        nameKey:"m3",
-        descFR:"Trucs mentaux: ÷5, ÷25, ÷50 (et x). Comme dans le cahier.",
-        descNL:"Hoofdrekenen: ÷5, ÷25, ÷50 (en x). Zoals in het boek.",
-        gen: gen52550
-      },
-      {
-        id:"logic_sequences",
-        tagKey:"moduleTagLogic",
-        nameKey:"m4",
-        descFR:"Suites: trouve le prochain nombre. Plusieurs niveaux.",
-        descNL:"Reeksen: vind het volgende getal. Verschillende niveaus.",
-        gen: genLogicSequences
-      },
-      {
-        id:"logic_odd_truefalse",
-        tagKey:"moduleTagLogic",
-        nameKey:"m5",
-        descFR:"Intrus, vrai/faux, mini-logique. Parfait pour varier.",
-        descNL:"Vreemde eend, juist/fout, mini-logica. Lekker afwisselend.",
-        gen: genLogicOddTF
-      },
-      {
-        id:"story_scenarios",
-        tagKey:"moduleTagStory",
-        nameKey:"m6",
-        descFR:"Problèmes concrets (tickets, boîtes, natation, bonbons…).",
-        descNL:"Echte scenario’s (tickets, dozen, zwemmen, snoep…).",
-        gen: genScenarios
-      }
-    ];
-
-    function moduleName(m){
-      return t()[m.nameKey];
-    }
-    function moduleDesc(m){
-      return (lang==="fr") ? m.descFR : m.descNL;
-    }
-    function moduleTag(m){
-      return t()[m.tagKey];
-    }
-
-    // ===============================
-    // Random helpers
-    // ===============================
-    const rnd=(min,max)=>Math.floor(Math.random()*(max-min+1))+min;
-    const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
-    const pick = (arr)=>arr[rnd(0,arr.length-1)];
-    function roundTo(n, base){ return Math.round(n/base)*base; }
-
-    // grade impacts difficulty
-    function gradeCfg(){
-      if(state.grade==="easy") return { maxFactor:0.4, logicMax:50 };
-      if(state.grade==="hard") return { maxFactor:1.0, logicMax:250 };
-      return { maxFactor:0.7, logicMax:120 };
-    }
-
-    // ===============================
-    // Exercise model
-    // { prompt, answer, kind:"number"|"text", hint, methods:[m1,m2,m3], meta }
-    // ===============================
-
-    // ---------- 1) Math Cijferen (+ - × ÷) ----------
-    function genMathCijferen(count, maxV){
-      const cfg = gradeCfg();
-      const max = clamp(Math.floor(maxV*cfg.maxFactor) || maxV, 50, maxV);
-
-      const ops = ["+","−","×","÷"];
-      const out=[];
-      for(let i=0;i<count;i++){
-        const op = pick(ops);
-        if(op==="+"){
-          const a=rnd(50,max), b=rnd(50,max);
-          const ans=a+b;
-          const ra=roundTo(a, a>=1000?1000:100), rb=roundTo(b, b>=1000?1000:100);
-          out.push({
-            kind:"number",
-            prompt:`${a} + ${b}`,
-            answer:ans,
-            meta:"",
-            hint: `${ra} + ${rb} ≈ ${ra+rb}`,
-            methods: [
-              // method1
-              lang==="fr"
-                ? `Arrondis: ${ra} + ${rb} ≈ ${ra+rb}. Ça te donne une idée du résultat.`
-                : `Rond af: ${ra} + ${rb} ≈ ${ra+rb}. Zo weet je ongeveer het antwoord.`,
-              // method2
-              lang==="fr"
-                ? `Cijferen: aligne unités/dizaines/centaines, additionne colonne par colonne, et note les retenues.`
-                : `Cijferend: zet onder elkaar, tel kolom per kolom, en noteer de onthouden.`,
-              // method3
-              lang==="fr"
-                ? `Contrôle: soustraction inverse. Vérifie: (résultat) − ${a} = ${b}.`
-                : `Controle: omgekeerd. Check: (antwoord) − ${a} = ${b}.`
-            ]
-          });
-        }
-
-        if(op==="−"){
-          let a=rnd(50,max), b=rnd(50,max);
-          if(b>a){ const t=a; a=b; b=t; }
-          const ans=a-b;
-          const ra=roundTo(a, a>=1000?1000:100), rb=roundTo(b, b>=1000?1000:100);
-          out.push({
-            kind:"number",
-            prompt:`${a} − ${b}`,
-            answer:ans,
-            meta:"",
-            hint: `${ra} − ${rb} ≈ ${ra-rb}`,
-            methods: [
-              lang==="fr"
-                ? `Arrondis: ${ra} − ${rb} ≈ ${ra-rb}. Si ton résultat est très loin, c’est suspect.`
-                : `Rond af: ${ra} − ${rb} ≈ ${ra-rb}. Als je antwoord ver weg is, klopt er iets niet.`,
-              lang==="fr"
-                ? `Cijferen: soustrais colonne par colonne. Si en haut c’est trop petit, emprunte 1 à gauche.`
-                : `Cijferend: trek kolom per kolom af. Is boven te klein? Dan leen je 1 van links.`,
-              lang==="fr"
-                ? `Contrôle: addition. Vérifie: (résultat) + ${b} = ${a}.`
-                : `Controle: optellen. Check: (antwoord) + ${b} = ${a}.`
-            ]
-          });
-        }
-
-        if(op==="×"){
-          const a=rnd(12, Math.min(999,max));
-          let b=rnd(2, 99);
-          if(a*b > max*10) b=rnd(2,19);
-          const ans=a*b;
-          const ra=roundTo(a, a>=500?100:10), rb=roundTo(b, b>=50?10:1);
-          out.push({
-            kind:"number",
-            prompt:`${a} × ${b}`,
-            answer:ans,
-            meta:"",
-            hint:`${ra} × ${rb} ≈ ${ra*rb}`,
-            methods:[
-              lang==="fr"
-                ? `Arrondis: ${ra} × ${rb} ≈ ${ra*rb}. Ça te donne l’ordre de grandeur.`
-                : `Rond af: ${ra} × ${rb} ≈ ${ra*rb}. Zo weet je de grootteorde.`,
-              lang==="fr"
-                ? `Décompose: ${a} × ${b} = ${a} × (${Math.floor(b/10)*10} + ${b%10}) = ${a}×${Math.floor(b/10)*10} + ${a}×${b%10}.`
-                : `Ontbind: ${a} × ${b} = ${a} × (${Math.floor(b/10)*10} + ${b%10}) = ${a}×${Math.floor(b/10)*10} + ${a}×${b%10}.`,
-              lang==="fr"
-                ? `Cijferen: multiplie par les unités, puis par les dizaines (décale), et additionne.`
-                : `Cijferend: vermenigvuldig met de eenheden, dan de tientallen (opschuiven), en tel op.`
-            ]
-          });
-        }
-
-        if(op==="÷"){
-          // exact division, plus explanation rounding/decompose
-          const d = rnd(2, 99);
-          const q = rnd(3, 200);
-          const a = d*q;
-          const ans = q;
-
-          // rounding-friendly hint
-          const base = d>=50?100:10;
-          const near = Math.round(a/base)*base;
-          const approx = Math.round(near/d);
-
-          out.push({
-            kind:"number",
-            prompt:`${a} ÷ ${d}`,
-            answer:ans,
-            meta: (lang==="fr") ? "Division exacte (reste = 0)." : "Exacte deling (rest = 0).",
-            hint: (lang==="fr")
-              ? `Arrondis: ${a} ≈ ${near} → ${near} ÷ ${d} ≈ ${approx}`
-              : `Rond af: ${a} ≈ ${near} → ${near} ÷ ${d} ≈ ${approx}`,
-            methods:[
-              // Method 1: rounding then correct
-              (lang==="fr")
-                ? `Méthode arrondi: choisis un nombre proche de ${a} facile à diviser par ${d}. Exemple: ${a} ≈ ${near}. Calcule ${near} ÷ ${d} ≈ ${approx}. Ensuite, corrige avec la différence: ${near} − ${a} = ${near-a}. Divise cette différence par ${d} et ajuste le résultat.`
-                : `Afronden: kies een getal dicht bij ${a} dat makkelijk is om te delen door ${d}. Bijvoorbeeld ${a} ≈ ${near}. Reken ${near} ÷ ${d} ≈ ${approx}. Corrigeer met het verschil: ${near} − ${a} = ${near-a}. Deel dat verschil door ${d} en pas aan.`,
-              // Method 2: decompose/recompose
-              (lang==="fr")
-                ? `Décomposer/recomposer: écris ${a} comme somme de paquets divisibles par ${d}. Exemple: ${a} = (${d}×${Math.floor(ans/2)}) + (${d}×${ans-Math.floor(ans/2)}). Donc ${a} ÷ ${d} = ${Math.floor(ans/2)} + ${ans-Math.floor(ans/2)} = ${ans}.`
-                : `Ontbinden/samenstellen: schrijf ${a} als som van stukken die deelbaar zijn door ${d}. Bijvoorbeeld: ${a} = (${d}×${Math.floor(ans/2)}) + (${d}×${ans-Math.floor(ans/2)}). Dus ${a} ÷ ${d} = ${Math.floor(ans/2)} + ${ans-Math.floor(ans/2)} = ${ans}.`,
-              // Method 3: quick check
-              (lang==="fr")
-                ? `Contrôle rapide: si ton quotient est ${ans}, alors ${ans} × ${d} doit faire ${a}.`
-                : `Snelle controle: als het quotiënt ${ans} is, dan moet ${ans} × ${d} = ${a}.`
-            ]
-          });
-        }
-      }
-      return out;
-    }
-
-    // ---------- 2) Divisibility & multiples ----------
-    function genDivisibility(count, maxV){
-      const cfg=gradeCfg();
-      const max = clamp(Math.floor(maxV*cfg.maxFactor) || maxV, 100, maxV);
-      const rules = [
-        {k:2, fr:"pair (dernier chiffre 0,2,4,6,8)", nl:"even (laatste cijfer 0,2,4,6,8)"},
-        {k:3, fr:"somme des chiffres multiple de 3", nl:"som van de cijfers is veelvoud van 3"},
-        {k:4, fr:"les 2 derniers chiffres divisibles par 4", nl:"laatste 2 cijfers deelbaar door 4"},
-        {k:5, fr:"dernier chiffre 0 ou 5", nl:"laatste cijfer 0 of 5"},
-        {k:8, fr:"les 3 derniers chiffres divisibles par 8", nl:"laatste 3 cijfers deelbaar door 8"},
-        {k:9, fr:"somme des chiffres multiple de 9", nl:"som van de cijfers is veelvoud van 9"},
-        {k:10, fr:"dernier chiffre 0", nl:"laatste cijfer 0"},
-      ];
-      const out=[];
-      for(let i=0;i<count;i++){
-        const r = pick(rules);
-        const n = rnd(100, max);
-        const isDiv = (n % r.k === 0);
-        const prompt = (lang==="fr")
-          ? `Vrai ou faux: ${n} est divisible par ${r.k} ? (réponds "vrai" ou "faux")`
-          : `Juist of fout: ${n} is deelbaar door ${r.k}? (antwoord "juist" of "fout")`;
-
-        out.push({
-          kind:"text",
-          prompt,
-          answer: isDiv ? (lang==="fr" ? "vrai" : "juist") : (lang==="fr" ? "faux" : "fout"),
-          meta:"",
-          hint: (lang==="fr") ? `Règle: ${r.fr}` : `Regel: ${r.nl}`,
-          methods:[
-            (lang==="fr") ? `Applique la règle: ${r.fr}.` : `Gebruik de regel: ${r.nl}.`,
-            (lang==="fr")
-              ? `Test rapide: calcule ${n} ÷ ${r.k}. Si tu obtiens un nombre entier, c’est divisible.`
-              : `Snelle test: reken ${n} ÷ ${r.k}. Als het een geheel getal is, dan is het deelbaar.`,
-            (lang==="fr")
-              ? `Contrôle: si divisible, alors ${r.k} × (quotient) = ${n}.`
-              : `Controle: als deelbaar, dan ${r.k} × (quotiënt) = ${n}.`
-          ]
-        });
-      }
-      return out;
-    }
-
-    // ---------- 3) Divide by 5/25/50 tricks ----------
-    function gen52550(count, maxV){
-      const cfg=gradeCfg();
-      const max = clamp(Math.floor(maxV*cfg.maxFactor) || maxV, 200, maxV);
-      const choices = [
-        {k:5, mult:2, fr:"÷5 = ÷10 puis ×2", nl:"÷5 = ÷10 en dan ×2"},
-        {k:25, mult:4, fr:"÷25 = ÷100 puis ×4", nl:"÷25 = ÷100 en dan ×4"},
-        {k:50, mult:2, fr:"÷50 = ÷100 puis ×2", nl:"÷50 = ÷100 en dan ×2"},
-      ];
-      const out=[];
-      for(let i=0;i<count;i++){
-        const c = pick(choices);
-        const q = rnd(2, 200);
-        const n = q*c.k;
-        out.push({
-          kind:"number",
-          prompt:`${n} ÷ ${c.k}`,
-          answer:q,
-          meta:"",
-          hint: (lang==="fr") ? c.fr : c.nl,
-          methods:[
-            (lang==="fr")
-              ? `Truc: ${c.fr}. Donc ${n} ÷ ${c.k} = (${n} ÷ ${c.k===5?10:100}) × ${c.mult}.`
-              : `Truc: ${c.nl}. Dus ${n} ÷ ${c.k} = (${n} ÷ ${c.k===5?10:100}) × ${c.mult}.`,
-            (lang==="fr")
-              ? `Exemple rapide: ${n} ÷ ${c.k===5?10:100} = ${n/(c.k===5?10:100)}. Puis ×${c.mult} = ${q}.`
-              : `Voorbeeld: ${n} ÷ ${c.k===5?10:100} = ${n/(c.k===5?10:100)}. Dan ×${c.mult} = ${q}.`,
-            (lang==="fr")
-              ? `Contrôle: ${q} × ${c.k} = ${n}.`
-              : `Controle: ${q} × ${c.k} = ${n}.`
-          ]
-        });
-      }
-      return out;
-    }
-
-    // ---------- 4) Logic sequences ----------
-    function genLogicSequences(count){
-      const max = gradeCfg().logicMax;
-      const patterns = [
-        // arithmetic
-        ()=>{ const a=rnd(2,10), d=rnd(2,9); const s=[a,a+d,a+2*d,a+3*d]; return {s, ans:a+4*d, why:`+${d}`} },
-        // multiply
-        ()=>{ const a=rnd(2,8), m=2; const s=[a,a*m,a*m*m,a*m*m*m]; return {s, ans:a*m*m*m*m, why:`×${m}`} },
-        // alternating + / -
-        ()=>{ const a=rnd(10,40), d=rnd(2,9); const s=[a,a+d,a,a+d]; return {s, ans:a, why:`+${d}, -${d}`} },
-        // add 1,2,3...
-        ()=>{ const a=rnd(1,15); const s=[a,a+1,a+3,a+6]; return {s, ans:a+10, why:`+1,+2,+3,+4`} },
-      ];
-      const out=[];
-      for(let i=0;i<count;i++){
-        const p = pick(patterns)();
-        const prompt = (lang==="fr")
-          ? `Suite: ${p.s.join(", ")}, … Quel est le prochain nombre ?`
-          : `Reeks: ${p.s.join(", ")}, … Wat is het volgende getal?`;
-        out.push({
-          kind:"number",
-          prompt,
-          answer:p.ans,
-          meta:"",
-          hint: (lang==="fr") ? `Regarde la règle: ${p.why}` : `Kijk naar de regel: ${p.why}`,
-          methods:[
-            (lang==="fr") ? `Observe les écarts entre les nombres.` : `Kijk naar de verschillen tussen de getallen.`,
-            (lang==="fr") ? `Vérifie que la règle marche à chaque étape.` : `Controleer of de regel bij elke stap klopt.`,
-            (lang==="fr") ? `Refais la suite avec la règle pour trouver le prochain.` : `Pas de regel toe om het volgende getal te vinden.`
-          ]
-        });
-      }
-      return out;
-    }
-
-    // ---------- 5) Odd one out + True/False logic ----------
-    function genLogicOddTF(count){
-      const out=[];
-      for(let i=0;i<count;i++){
-        if(i%2===0){
-          const a=rnd(10,99), b=rnd(10,99), c=rnd(10,99);
-          const even = rnd(10,99); // ensure one is even
-          const arr = [a|1, b|1, c|1, even & ~1]; // three odd, one even
-          // shuffle
-          for(let j=arr.length-1;j>0;j--){const k=rnd(0,j); [arr[j],arr[k]]=[arr[k],arr[j]];}
-          const oddOne = arr.find(x=>x%2===0);
-          const prompt = (lang==="fr")
-            ? `Intrus: ${arr.join("  ")}. Quel nombre est différent ?`
-            : `Vreemde eend: ${arr.join("  ")}. Welk getal is anders?`;
-          out.push({
-            kind:"number",
-            prompt,
-            answer:oddOne,
-            meta:"",
-            hint: (lang==="fr") ? `3 nombres impairs, 1 nombre pair.` : `3 oneven getallen, 1 even getal.`,
-            methods:[
-              (lang==="fr") ? `Regarde le dernier chiffre (pair/impair).` : `Kijk naar het laatste cijfer (even/oneven).`,
-              (lang==="fr") ? `Vérifie avec ÷2 : si ça tombe juste, c’est pair.` : `Check met ÷2: als het exact is, is het even.`,
-              (lang==="fr") ? `Explique la règle en une phrase.` : `Leg de regel uit in één zin.`
-            ]
-          });
-        }else{
-          const n=rnd(100,999);
-          const prompt = (lang==="fr")
-            ? `Vrai ou faux: ${n} est un multiple de 10 ? (vrai/faux)`
-            : `Juist of fout: ${n} is een veelvoud van 10? (juist/fout)`;
-          const ans = (n%10===0) ? (lang==="fr"?"vrai":"juist") : (lang==="fr"?"faux":"fout");
-          out.push({
-            kind:"text",
-            prompt,
-            answer:ans,
-            meta:"",
-            hint: (lang==="fr") ? `Multiple de 10 → dernier chiffre = 0.` : `Veelvoud van 10 → laatste cijfer = 0.`,
-            methods:[
-              (lang==="fr") ? `Regarde le dernier chiffre.` : `Kijk naar het laatste cijfer.`,
-              (lang==="fr") ? `Test rapide: ${n} ÷ 10. Si c’est entier, c’est vrai.` : `Snelle test: ${n} ÷ 10. Is het een geheel getal?`,
-              (lang==="fr") ? `Contrôle: (quotient) × 10 = ${n}.` : `Controle: (quotiënt) × 10 = ${n}.`
-            ]
-          });
-        }
-      }
-      return out;
-    }
-
-    // ---------- 6) Story scenarios ----------
-    function genScenarios(count){
-      const out=[];
-      const templates = [
-        ()=>{
-          const kids=rnd(120,520);
-          const days=5;
-          const ans=kids*days;
-          const prompt = (lang==="fr")
-            ? `Scénario: ${kids} enfants vont au sportcamp. Ils nagent chaque jour, sauf le weekend. Combien de tickets de piscine faut-il pour la semaine ?`
-            : `Scenario: ${kids} kinderen gaan op sportkamp. Ze zwemmen elke dag, behalve in het weekend. Hoeveel zwemtickets zijn nodig voor de week?`;
-          return {
-            kind:"number", prompt, answer:ans, meta:"",
-            hint: (lang==="fr") ? `Weekend = 2 jours sans nager → 5 jours.` : `Weekend = 2 dagen niet zwemmen → 5 dagen.`,
-            methods:[
-              (lang==="fr") ? `1) Trouve le nombre de jours: 7 − 2 = 5.` : `1) Zoek het aantal dagen: 7 − 2 = 5.`,
-              (lang==="fr") ? `2) Multiplie: ${kids} × 5.` : `2) Vermenigvuldig: ${kids} × 5.`,
-              (lang==="fr") ? `3) Contrôle: ${kids}×10 ÷2 = ${kids*10/2} (astuce ×5).` : `3) Controle: ${kids}×10 ÷2 = ${kids*10/2} (truc ×5).`
-            ]
-          };
-        },
-        ()=>{
-          const balls = pick([48,63,80,100,120]);
-          const box = pick([2,3,4,5,6,8,9,10]);
-          const possible = (balls%box===0);
-          const prompt = (lang==="fr")
-            ? `Scénario: J’ai ${balls} boules. Je veux faire des boîtes de ${box}. Est-ce possible sans reste ? (vrai/faux)`
-            : `Scenario: Ik heb ${balls} ballen. Ik wil doosjes van ${box} maken. Kan dat zonder rest? (juist/fout)`;
-          return {
-            kind:"text",
-            prompt,
-            answer: possible ? (lang==="fr"?"vrai":"juist") : (lang==="fr"?"faux":"fout"),
-            meta:"",
-            hint: (lang==="fr") ? `Vérifie si ${balls} ÷ ${box} est entier.` : `Check of ${balls} ÷ ${box} een geheel getal is.`,
-            methods:[
-              (lang==="fr") ? `1) Fais la division: ${balls} ÷ ${box}.` : `1) Deel: ${balls} ÷ ${box}.`,
-              (lang==="fr") ? `2) Si c’est entier → possible. Sinon → reste.` : `2) Geheel getal → kan. Anders → rest.`,
-              (lang==="fr") ? `3) Contrôle: (quotient) × ${box} = ${balls}.` : `3) Controle: (quotiënt) × ${box} = ${balls}.`
-            ]
-          };
-        },
-        ()=>{
-          // rounding + decompose story division
-          const d = pick([12,15,18,25,30,44]);
-          const q = rnd(60,150);
-          const total = d*q;
-          const prompt = (lang==="fr")
-            ? `Scénario: On partage ${total} cartes entre ${d} enfants. Combien de cartes par enfant ?`
-            : `Scenario: We verdelen ${total} kaartjes over ${d} kinderen. Hoeveel per kind?`;
-          // pick a rounding number near
-          const near = Math.round(total/100)*100;
-          const approx = Math.round(near/d);
-          return {
-            kind:"number",
-            prompt,
-            answer:q,
-            meta: (lang==="fr") ? "Division exacte." : "Exacte deling.",
-            hint: (lang==="fr")
-              ? `Arrondi: ${total} ≈ ${near} → ${near} ÷ ${d} ≈ ${approx}`
-              : `Afronden: ${total} ≈ ${near} → ${near} ÷ ${d} ≈ ${approx}`,
-            methods:[
-              (lang==="fr")
-                ? `Méthode arrondi: calcule ${near} ÷ ${d} ≈ ${approx}. Ensuite ajuste avec la différence ${near-total} ÷ ${d}.`
-                : `Afronden: reken ${near} ÷ ${d} ≈ ${approx}. Corrigeer met het verschil ${near-total} ÷ ${d}.`,
-              (lang==="fr")
-                ? `Décomposer: ${total} = ${d}×${Math.floor(q/2)} + ${d}×${q-Math.floor(q/2)}. Donc ÷${d} = ${Math.floor(q/2)} + ${q-Math.floor(q/2)} = ${q}.`
-                : `Ontbinden: ${total} = ${d}×${Math.floor(q/2)} + ${d}×${q-Math.floor(q/2)}. Dus ÷${d} = ${Math.floor(q/2)} + ${q-Math.floor(q/2)} = ${q}.`,
-              (lang==="fr")
-                ? `Contrôle: ${q} × ${d} = ${total}.`
-                : `Controle: ${q} × ${d} = ${total}.`
-            ]
-          };
-        }
-      ];
-
-      for(let i=0;i<count;i++){
-        out.push(pick(templates)());
-      }
-      return out;
-    }
-
-    // ===============================
-    // Rendering dashboard
-    // ===============================
-    function renderModuleCards(){
-      moduleCards.innerHTML="";
-      MODULES.forEach(m=>{
-        const el=document.createElement("div");
-        el.className="card";
-        el.innerHTML=`
-          <div class="cardHead">
-            <div>
-              <div class="cardTitle">${moduleName(m)}</div>
-              <div class="cardDesc">${moduleDesc(m)}</div>
-            </div>
-            <span class="tag">${moduleTag(m)}</span>
-          </div>
-          <div class="miniStats">
-            <span class="pill">🏆 <span>${t().record}</span>: <b>${bestForModule(m.id) || "—"}</b></span>
-            <span class="pill">✨ <span>${t().xp}</span>: <b>${state.stats.xp}</b></span>
-          </div>
-          <div class="cardActions">
-            <button class="btnPrimary" data-start="${m.id}">${t().start}</button>
-          </div>
-        `;
-        moduleCards.appendChild(el);
-      });
-
-      document.querySelectorAll("[data-start]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const id=btn.getAttribute("data-start");
-          startModule(id);
-        });
-      });
-    }
-
-    function bestForModule(moduleId){
-      const items = state.history.filter(h=>h.moduleId===moduleId);
-      if(!items.length) return null;
-      // best by ok then time
-      items.sort((a,b)=> (b.ok-a.ok) || (a.timeSec-b.timeSec));
-      const top=items[0];
-      return `${top.ok}/${top.total} (${fmtTime(top.timeSec)})`;
-    }
-
-    function renderHistory(){
-      historyList.innerHTML="";
-      if(!state.history.length){
-        const d=document.createElement("div");
-        d.className="panel";
-        d.style.margin="0";
-        d.style.boxShadow="none";
-        d.innerHTML = `<div class="panelTitle"><h2>—</h2><div class="meta">${t().noneYet}</div></div>`;
-        historyList.appendChild(d);
-        return;
-      }
-      // show last 8
-      const items = [...state.history].sort((a,b)=>b.ts-a.ts).slice(0,8);
-      items.forEach(h=>{
-        const row=document.createElement("div");
-        row.className="card";
-        row.style.minHeight="unset";
-        row.innerHTML=`
-          <div class="cardHead">
-            <div>
-              <div class="cardTitle">${h.moduleName}</div>
-              <div class="cardDesc">${new Date(h.ts).toLocaleString()}</div>
-            </div>
-            <span class="tag">${t().scoreLine(h.ok,h.total,fmtTime(h.timeSec))}</span>
-          </div>
-        `;
-        historyList.appendChild(row);
-      });
-    }
-
-    // ===============================
-    // Session logic
-    // ===============================
-    let currentModule=null;
-    let exercises=[];
-    let timer=null;
-    let startTs=0;
-    let wrongOnly=false;
-
-    function fmtTime(sec){
-      const m=Math.floor(sec/60);
-      const s=sec%60;
-      return `${m}:${String(s).padStart(2,"0")}`;
-    }
-
-    function renderSessionHeader(){
-      if(!currentModule) return;
-      sessionTitle.textContent = moduleName(currentModule);
-      kpiBest.textContent = bestForModule(currentModule.id) || "—";
-      kpiTotal.textContent = exercises.length;
-    }
-
-    function tick(){
-      const sec=Math.max(0, Math.floor((Date.now()-startTs)/1000));
-      kpiTime.textContent = fmtTime(sec);
-    }
-
-    function startModule(moduleId){
-      currentModule = MODULES.find(m=>m.id===moduleId);
-      wrongOnly=false;
-      showSession();
-      newSet(); // generate a set immediately
-    }
-
-    function showSession(){
-      dashboardView.classList.add("hidden");
-      sessionView.classList.remove("hidden");
-      homeBtn.classList.remove("hidden");
-      renderSessionHeader();
-    }
-    function showDashboard(){
-      sessionView.classList.add("hidden");
-      dashboardView.classList.remove("hidden");
-      homeBtn.classList.add("hidden");
-      questions.innerHTML="";
-      stopTimer();
-      renderHistory();
-    }
-    homeBtn.addEventListener("click", showDashboard);
-
-    function stopTimer(){
-      if(timer){ clearInterval(timer); timer=null; }
-    }
-
-    function newSet(){
-      if(!currentModule) return;
-      stopTimer();
-      const countN = clamp(Number(count.value)||10, 5, 30);
-      const maxV = clamp(Number(maxVal.value)||10000, 50, 10000);
-
-      exercises = currentModule.gen(countN, maxV);
-      exercises.forEach(x=>{ x._user=""; x._correct=null; x._show=false; });
-
-      renderSessionHeader();
-      renderExercises();
-
-      // reset KPIs
-      kpiOk.textContent="0"; kpiBad.textContent="0";
-      retryWrongBtn.disabled=true;
-
-      // timer
-      startTs=Date.now();
-      timer=setInterval(tick, 500);
-      tick();
-      // focus first answer
-      setTimeout(()=>{
-        const first = document.querySelector("input[data-idx='0']");
-        if(first) first.focus();
-      },0);
-    }
-
-    newSetBtn.addEventListener("click", newSet);
-
-    function renderExercises(){
-      questions.innerHTML="";
-      exercises.forEach((x, idx)=>{
-        const card=document.createElement("div");
-        card.className="q";
-        const meta = x.meta ? `<div class="qmeta">${x.meta}</div>` : `<div class="qmeta">${currentModule ? moduleTag(currentModule) : ""}</div>`;
-        card.innerHTML=`
-          <div class="qhead">
-            <div>
-              <div class="qtitle">${(lang==="fr"?"Exercice":"Oefening")} ${idx+1} — ${escapeHtml(x.prompt)}</div>
-              ${meta}
-            </div>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-              <span class="badge" data-badge="${idx}">—</span>
-              <button class="btnGhost" type="button" data-toggle="${idx}">${t().showSolution}</button>
-            </div>
-          </div>
-
-          <div class="answerRow">
-            <input data-idx="${idx}" placeholder="${t().answer}" />
-          </div>
-
-          <details>
-            <summary>${t().hint}</summary>
-            <div class="content">${escapeHtml(x.hint)}</div>
-          </details>
-
-          <details>
-            <summary>${t().method1}</summary>
-            <div class="content">${x.methods[0]}</div>
-          </details>
-
-          <details>
-            <summary>${t().method2}</summary>
-            <div class="content">${x.methods[1]}</div>
-          </details>
-
-          <details>
-            <summary>${t().method3}</summary>
-            <div class="content">${x.methods[2]}</div>
-          </details>
-
-          <div class="callout" data-sol="${idx}" style="display:none"></div>
-        `;
-        questions.appendChild(card);
-      });
-
-      // input listeners
-      document.querySelectorAll("input[data-idx]").forEach(inp=>{
-        inp.addEventListener("input", ()=>{
-          const i=Number(inp.getAttribute("data-idx"));
-          exercises[i]._user = inp.value.trim();
-        });
-      });
-
-      // solution toggles
-      document.querySelectorAll("[data-toggle]").forEach(btn=>{
-        btn.addEventListener("click", ()=>{
-          const i=Number(btn.getAttribute("data-toggle"));
-          exercises[i]._show = !exercises[i]._show;
-          const sol = document.querySelector(`[data-sol="${i}"]`);
-          const shown = exercises[i]._show;
-          sol.style.display = shown ? "block" : "none";
-          sol.textContent = (lang==="fr")
-            ? `Solution: ${exercises[i].answer}`
-            : `Oplossing: ${exercises[i].answer}`;
-          btn.textContent = shown ? t().hideSolution : t().showSolution;
-        });
-      });
-    }
-
-    function normalizeTextAnswer(s){
-      return s.toLowerCase().replaceAll(" ", "");
-    }
-
-    function checkAll(){
-      let ok=0, bad=0;
-      exercises.forEach((x, idx)=>{
-        const badge = document.querySelector(`[data-badge="${idx}"]`);
-        let correct=false;
-
-        if(x.kind==="number"){
-          if(/^-?\d+(\.\d+)?$/.test(x._user)){
-            correct = Number(x._user) === Number(x.answer);
-          }
-        }else{
-          const u = normalizeTextAnswer(x._user);
-          const a = normalizeTextAnswer(String(x.answer));
-          correct = (u===a);
-        }
-
-        x._correct=correct;
-        if(correct){
-          ok++;
-          badge.textContent = "✔";
-          badge.className = "badge ok";
-        }else{
-          bad++;
-          badge.textContent = "✘";
-          badge.className = "badge bad";
-        }
-      });
-
-      kpiOk.textContent = String(ok);
-      kpiBad.textContent = String(bad);
-
-      retryWrongBtn.disabled = bad===0;
-
-      // award XP
-      const sec = Math.max(0, Math.floor((Date.now()-startTs)/1000));
-      awardResults(ok, exercises.length, sec);
-    }
-    checkBtn.addEventListener("click", checkAll);
-
-    function retryWrong(){
-      const wrong = exercises.filter(x=>!x._correct);
-      exercises = wrong.map(x=>({ ...x, _user:"", _correct:null, _show:false }));
-      renderSessionHeader();
-      renderExercises();
-      kpiOk.textContent="0"; kpiBad.textContent="0";
-      retryWrongBtn.disabled=true;
-      // restart timer for retry session
-      stopTimer();
-      startTs=Date.now();
-      timer=setInterval(tick, 500);
-      tick();
-    }
-    retryWrongBtn.addEventListener("click", retryWrong);
-
-    // ===============================
-    // Motivation / records / streak
-    // ===============================
-    function awardResults(ok,total,timeSec){
-      // update best overall (by ok then time)
-      const prevBest = state.stats.best;
-      const current = { ok,total,timeSec };
-
-      const isBetter = (!prevBest)
-        || (ok > prevBest.ok)
-        || (ok === prevBest.ok && timeSec < prevBest.timeSec);
-
-      if(isBetter){
-        state.stats.best = current;
-      }
-
-      // XP: base + correctness + speed bonus
-      const ratio = total ? ok/total : 0;
-      let xpGain = Math.round(20 + 80*ratio);
-      if(timeSec <= total*6) xpGain += 10; // quick bonus
-      state.stats.xp += xpGain;
-
-      // streak: one per day if a check is done
-      const today = new Date().toDateString();
-      if(state.stats.lastDay !== today){
-        state.stats.streak += 1;
-        state.stats.lastDay = today;
-      }
-
-      // add history entry
-      if(currentModule){
-        state.history.push({
-          ts: Date.now(),
-          moduleId: currentModule.id,
-          moduleName: moduleName(currentModule),
-          ok,total,timeSec
-        });
-      }
-
-      saveState();
-      // refresh top pills
-      applyLang(); // re-renders pills + history + cards
-    }
-
-    // ===============================
-    // Welcome modal
-    // ===============================
-    function openWelcome(){
-      nameInput.value = state.name || "Valentina";
-      gradeSelect.value = state.grade || "mid";
-      welcomeTitle.textContent = t().welcomeTitle(state.name || "Valentina");
-      welcomeBack.style.display = "flex";
-    }
-    function closeWelcome(){
-      welcomeBack.style.display = "none";
-    }
-    welcomeClose.addEventListener("click", ()=>{
-      const nm = (nameInput.value || "Valentina").trim();
-      state.name = nm.slice(0,24);
-      state.grade = gradeSelect.value;
-      saveState();
-      closeWelcome();
-      applyLang();
-    });
-
-    // ===============================
-    // Theme drawer
-    // ===============================
-    function openTheme(){ themeBack.style.display="flex"; }
-    function closeTheme(){ themeBack.style.display="none"; }
-    themeBtn.addEventListener("click", openTheme);
-    themeClose.addEventListener("click", closeTheme);
-    themeBack.addEventListener("click", (e)=>{ if(e.target===themeBack) closeTheme(); });
-
-    accentPicker.addEventListener("input", ()=>{
-      state.theme.accent = accentPicker.value;
-      saveState(); applyTheme();
-    });
-    accent2Picker.addEventListener("input", ()=>{
-      state.theme.accent2 = accent2Picker.value;
-      saveState(); applyTheme();
-    });
-    bgPicker.addEventListener("input", ()=>{
-      state.theme.bg = bgPicker.value;
-      saveState(); applyTheme();
-    });
-
-    const PRESETS = {
-      midnight:{accent:"#4c6fff", accent2:"#8a5bff", bg:"#0b1020"},
-      ocean:{accent:"#2dd4ff", accent2:"#1d4ed8", bg:"#071a2b"},
-      sunset:{accent:"#ff7a59", accent2:"#ff4fd8", bg:"#1a0b14"},
-      mint:{accent:"#35d07f", accent2:"#4c6fff", bg:"#07140f"},
-    };
-    document.querySelectorAll("[data-preset]").forEach(b=>{
-      b.addEventListener("click", ()=>{
-        const p = PRESETS[b.getAttribute("data-preset")];
-        state.theme = { ...state.theme, ...p };
-        saveState(); applyTheme();
-      });
-    });
-
-    clearDataBtn.addEventListener("click", ()=>{
-      if(confirm(t().warnClear)){
-        state = structuredClone(defaultState);
-        saveState();
-        applyTheme();
-        applyLang();
-        showDashboard();
-      }
-    });
-
-    // ===============================
-    // Reset button
-    // ===============================
-    resetBtn.addEventListener("click", ()=>{
-      // reset only current session answers (not records)
-      exercises.forEach(x=>{ x._user=""; x._correct=null; x._show=false; });
-      renderExercises();
-      kpiOk.textContent="0"; kpiBad.textContent="0";
-      retryWrongBtn.disabled=true;
-    });
-
-    // ===============================
-    // Language switch
-    // ===============================
-    langBtn.addEventListener("click", ()=>{
-      lang = (lang==="fr") ? "nl" : "fr";
-      applyLang();
-      // re-render exercises labels if in session
-      if(!sessionView.classList.contains("hidden")) renderExercises();
-    });
-
-    // ===============================
-    // Utils
-    // ===============================
-    function escapeHtml(s){
-      return String(s)
-        .replaceAll("&","&amp;")
-        .replaceAll("<","&lt;")
-        .replaceAll(">","&gt;")
-        .replaceAll('"',"&quot;");
-    }
-
-    // ===============================
-    // Init
-    // ===============================
-    applyTheme();
-    applyLang();
-
-    // show welcome once per day (soft)
-    const welcomeKey = "valentina_welcome_day";
-    const today = new Date().toDateString();
-    if(localStorage.getItem(welcomeKey) !== today){
-      localStorage.setItem(welcomeKey, today);
-      openWelcome();
-    }
-  </script>
+  <!-- LEVEL UP MODAL -->
+  <div class="modalBack" id="levelUpBack">
+    <div class="modal levelUpModal">
+      <div class="trophy">🏆</div>
+      <h3 style="font-size: 24px; color: var(--accent2)">Niveau Supérieur !</h3>
+      <div class="levelNumber" id="ui_newLevel">2</div>
+      <p>Incroyable ! Tu deviens super forte ! 🎉</p>
+      <button id="closeLevelUp" class="btnPrimary" style="font-size:16px; padding: 12px 24px;">Génial !</button>
+    </div>
+  </div>
 </body>
+
 </html>
