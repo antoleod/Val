@@ -21,6 +21,7 @@
         <span class="pill">🏆 <span id="ui_bestPill">Record</span>: <b id="bestAllPill">0%</b></span>
         <span class="pill">🔥 <span id="ui_streakPill">Streak</span>: <b id="streakPill">0</b></span>
         <button id="langBtn">FR → NL</button>
+        <span class="pill">💰 <b id="coinBalance">0</b></span>
         <div id="fireWidget"><span class="fireIcon">🔥🔥</span> <span id="fireCount">0</span></div>
         <span class="pill xpPill">
           Lvl <b id="levelPill">1</b>
@@ -50,7 +51,9 @@
     <div id="viewHome">
       <!-- PET PANEL -->
       <div class="petPanel">
-        <div class="petAvatar" id="petAvatar">🥚</div>
+        <div class="petAvatar" id="petAvatar">
+          <!-- Pet and accessories will be rendered here by JS -->
+        </div>
         <div class="petName" id="petName">Oeuf Mystère</div>
         <div class="petStatus" id="petStatus">Niveau 1 requis pour éclore...</div>
       </div>
@@ -83,10 +86,37 @@
 
         <div class="divider"></div>
 
+        <div class="sectionTitle">
+          <h2 id="ui_chartTitle">Progression (7 jours)</h2>
+        </div>
+        <div class="chartWrap" id="weeklyChart"></div>
+      </div>
+
+      <div class="panel">
+        <div class="sectionTitle">
+          <h2 id="ui_examZoneTitle">Activités Spéciales</h2>
+        </div>
+        <div class="divider"></div>
+        <div class="examButtons">
+          <button id="openShopBtn">Boutique 🛍️</button>
+          <button id="examBtnMath">Examen de Maths</button>
+          <button id="examBtnLogic">Examen de Logique</button>
+          <button id="examBtnStory">Examen de Scénarios</button>
+          <button id="examBtnMix" class="btnPrimary">Examen Surprise</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="sectionTitle">
+          <h2 id="ui_practiceZoneTitle">Zona de Práctica</h2>
+        </div>
+        <div class="divider"></div>
         <div class="cards" id="moduleCards">
           <!-- Filled by JS (guaranteed) -->
         </div>
       </div>
+
+
 
       <div class="panel">
         <div class="sectionTitle">
@@ -429,6 +459,16 @@
       <h3 id="ui_gameOverTitle" style="font-size: 24px; color: var(--bad);">Game Over</h3>
       <p id="ui_gameOverText">Tu as perdu toutes tes vies !</p>
       <button id="closeGameOver" class="btnPrimary">OK</button>
+    </div>
+  </div>
+
+  <!-- SHOP MODAL -->
+  <div class="modalBack" id="shopBack">
+    <div class="modal">
+      <h3>Boutique d'Accessoires</h3>
+      <p>Dépense tes pièces pour personnaliser ta mascotte !</p>
+      <div class="badgeGrid" id="shopGrid" style="grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));"></div>
+      <div style="margin-top:16px; text-align:center"><button id="closeShop">Fermer</button></div>
     </div>
   </div>
 </body>

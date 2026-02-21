@@ -73,6 +73,14 @@ const BADGES = [
     { id: "mathSpeed", icon: "⚡", title: "Flash", desc: "Maths en < 60s (100%)", check: (s, ctx) => ctx?.type === "math" && ctx.score === 100 && ctx.time < 60 }
 ];
 
+const SHOP_ITEMS = [
+    { id: 'hat_crown', name: 'Couronne', icon: '👑', price: 1000, type: 'hat', style: 'top: -15px; left: 25px; transform: rotate(-15deg);' },
+    { id: 'hat_cowboy', name: 'Chapeau Cowboy', icon: '🤠', price: 750, type: 'hat', style: 'font-size: 60px; top: -25px; left: 15px;' },
+    { id: 'glasses_cool', name: 'Lunettes Cool', icon: '😎', price: 500, type: 'glasses', style: 'font-size: 50px; top: 15px; left: 20px;' },
+    { id: 'glasses_monocle', name: 'Monocle', icon: '🧐', price: 600, type: 'glasses', style: 'font-size: 50px; top: 10px; left: 20px;' },
+    { id: 'item_scarf', name: 'Écharpe', icon: '🧣', price: 400, type: 'item', style: 'font-size: 60px; top: 30px; left: 15px;' }
+];
+
 // ===== Storage Helpers =====
 const save = (k, v) => localStorage.setItem("vp_" + k, JSON.stringify(v));
 const load = (k, d) => { try { const v = localStorage.getItem("vp_" + k); return v ? JSON.parse(v) : d; } catch { return d; } };
@@ -93,8 +101,10 @@ const state = {
         streak: 0,
         lastDay: "",
         history: [],
-        level: 1,
-        xp: 0
+        level: 1, xp: 0,
+        coins: 0,
+        purchasedItems: [],
+        petAccessories: { hat: null, glasses: null, item: null }
     }),
     theme: load("theme", PRESETS.ocean)
 };
@@ -585,6 +595,7 @@ function finishSession(label, key, res, count) {
 
     // Add XP for correct answers
     addXp(res.ok * XP_PER_CORRECT_ANSWER);
+    addCoins(res.ok * COINS_PER_CORRECT_ANSWER);
     updateFireStreak(res.ok === count); // Only boost streak if perfect? Or per question? Let's keep simple: session perfect
 
     st.best[key] = Math.max(st.best[key] || 0, res.scorePct);
@@ -878,6 +889,11 @@ function renderXpAndLevel() {
     document.getElementById("xpBarInner").style.width = `${Math.min(100, progress)}%`;
 }
 
+function renderCoins() {
+    const balance = state.stats.coins || 0;
+    document.getElementById("coinBalance").textContent = balance;
+}
+
 function renderPet() {
     const lvl = state.stats.level || 1;
     const stages = [
@@ -895,7 +911,28 @@ function renderPet() {
         if (lvl >= s.min) current = s;
     }
 
-    document.getElementById("petAvatar").textContent = current.icon;
+    const avatarContainer = document.getElementById("petAvatar");
+    avatarContainer.innerHTML = ''; // Clear first
+
+    const basePet = document.createElement('span');
+    basePet.textContent = current.icon;
+    avatarContainer.appendChild(basePet);
+
+    // Render accessories
+    for (const type in state.stats.petAccessories) {
+        const itemId = state.stats.petAccessories[type];
+        if (itemId) {
+            const itemData = SHOP_ITEMS.find(i => i.id === itemId);
+            if (itemData) {
+                const accessoryEl = document.createElement('span');
+                accessoryEl.className = 'petAccessory';
+                accessoryEl.textContent = itemData.icon;
+                accessoryEl.style.cssText = itemData.style;
+                avatarContainer.appendChild(accessoryEl);
+            }
+        }
+    }
+
     document.getElementById("petName").textContent = T().pet_stages[current.nameIdx];
 
     const statusText = (current.next === 999) ? T().pet_max : T().pet_status(lvl, current.next);
@@ -967,6 +1004,7 @@ function renderCards() {
     document.getElementById("goMathTest").onclick = () => { show(viewMath); document.getElementById("startMath").click(); };
     document.getElementById("goLogicTest").onclick = () => { show(viewLogic); document.getElementById("startLogic").click(); };
     document.getElementById("goStoryTest").onclick = () => { show(viewStory); document.getElementById("startStory").click(); };
+    document.getElementById("openShopBtn").onclick = () => { renderShop(); document.getElementById("shopBack").style.display = 'flex'; };
 
     // Custom Practice
     const custBack = document.getElementById("customBack");
@@ -1119,6 +1157,65 @@ document.getElementById("ui_kpi_badges").onclick = () => { renderBadgesModal(); 
 document.getElementById("closeBadges").onclick = () => badgesBack.style.display = "none";
 badgesBack.addEventListener("click", (e) => { if (e.target === badgesBack) badgesBack.style.display = "none"; });
 
+// Shop Modal
+const shopBack = document.getElementById("shopBack");
+document.getElementById("closeShop").onclick = () => shopBack.style.display = "none";
+shopBack.addEventListener("click", (e) => { if (e.target === shopBack) shopBack.style.display = "none"; });
+
+function renderShop() {
+    const grid = document.getElementById("shopGrid");
+    grid.innerHTML = "";
+    const purchased = state.stats.purchasedItems || [];
+    const coins = state.stats.coins || 0;
+
+    SHOP_ITEMS.forEach(item => {
+        const isPurchased = purchased.includes(item.id);
+        const isEquipped = state.stats.petAccessories[item.type] === item.id;
+        const canAfford = coins >= item.price;
+
+        const div = document.createElement("div");
+        div.className = "shopItem";
+
+        let buttonHtml = '';
+        if (isEquipped) {
+            buttonHtml = `<button disabled>${T().shop_equipped}</button>`;
+        } else if (isPurchased) {
+            buttonHtml = `<button onclick="equipItem('${item.id}')">${T().shop_equip}</button>`;
+        } else {
+            buttonHtml = `<button onclick="buyItem('${item.id}')" ${!canAfford ? 'disabled' : ''}>${T().shop_buy}</button>`;
+        }
+
+        div.innerHTML = `
+            <div class="shopItemIcon">${item.icon}</div>
+            <div class="shopItemName">${item.name}</div>
+            <div class="shopItemPrice">💰 ${item.price}</div>
+            ${buttonHtml}
+        `;
+        grid.appendChild(div);
+    });
+}
+
+window.buyItem = (itemId) => {
+    const item = SHOP_ITEMS.find(i => i.id === itemId);
+    if (item && state.stats.coins >= item.price) {
+        state.stats.coins -= item.price;
+        state.stats.purchasedItems.push(itemId);
+        save("stats", state.stats);
+        renderCoins();
+        renderShop();
+    }
+};
+
+window.equipItem = (itemId) => {
+    const item = SHOP_ITEMS.find(i => i.id === itemId);
+    if (item && state.stats.purchasedItems.includes(itemId)) {
+        state.stats.petAccessories[item.type] = itemId;
+        save("stats", state.stats);
+        renderPet();
+        renderShop();
+    }
+};
+
 // Game Over Modal
 const gameOverBack = document.getElementById("gameOverBack");
 document.getElementById("closeGameOver").onclick = () => gameOverBack.style.display = "none";
@@ -1130,6 +1227,7 @@ autoTheme(); // Check time on load
 applyLang();
 renderCards();
 renderDashboard();
+renderCoins();
 renderXpAndLevel(); // Initial render for level and XP
 renderPet(); // Initial render for pet
 setTimeout(openWelcome, 200);
