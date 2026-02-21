@@ -1,19 +1,14 @@
 // ===== Constants & Config =====
 const XP_PER_CORRECT_ANSWER = 10;
 
-// Default dark values for resetting
-const DARK_DEFAULTS = { text: "#eef1ff", card: "rgba(255, 255, 255, .06)", card2: "rgba(255, 255, 255, .045)", line: "rgba(255, 255, 255, .12)", muted: "rgba(238, 241, 255, .72)" };
-
 const PRESETS = {
-    ocean: { ...DARK_DEFAULTS, accent: "#4c6fff", accent2: "#00d4ff", bg0: "#070a14", bg1: "#06122a" },
-    violet: { ...DARK_DEFAULTS, accent: "#8a5bff", accent2: "#ff5bd6", bg0: "#070a14", bg1: "#120a2a" },
-    mint: { ...DARK_DEFAULTS, accent: "#35d07f", accent2: "#4c6fff", bg0: "#070a14", bg1: "#071a1a" },
-    sunset: { ...DARK_DEFAULTS, accent: "#ff7a59", accent2: "#8a5bff", bg0: "#070a14", bg1: "#241021" },
-    gold: { ...DARK_DEFAULTS, accent: "#ffcc66", accent2: "#ff5b6e", bg0: "#070a14", bg1: "#22150b" },
+    ocean: { accent: "#4c6fff", accent2: "#00d4ff", bg0: "#070a14", bg1: "#06122a" },
+    violet: { accent: "#8a5bff", accent2: "#ff5bd6", bg0: "#070a14", bg1: "#120a2a" },
+    mint: { accent: "#35d07f", accent2: "#4c6fff", bg0: "#070a14", bg1: "#071a1a" },
+    sunset: { accent: "#ff7a59", accent2: "#8a5bff", bg0: "#070a14", bg1: "#241021" },
+    gold: { accent: "#ffcc66", accent2: "#ff5b6e", bg0: "#070a14", bg1: "#22150b" },
     day: {
         accent: "#4c6fff", accent2: "#00d4ff", bg0: "#f0f4f8", bg1: "#ffffff",
-        text: "#1a202c", card: "rgba(255, 255, 255, 0.75)", card2: "rgba(255, 255, 255, 0.5)",
-        line: "rgba(0, 0, 0, 0.08)", muted: "rgba(0, 0, 0, 0.5)"
     }
 };
 
@@ -29,6 +24,10 @@ const I18N = {
         enter: "Entrer",
         time: "Temps",
         best_time: "Record temps",
+        test: "Test",
+        create: "Créer",
+        game_over_title: "Game Over",
+        game_over_text: "Tu as perdu toutes tes vies ! Essaie encore.",
         exam_title: "Examen Surprise",
         exam_desc: "Un mélange de tout pour tester tes connaissances !",
         pet_stages: ["Oeuf", "Poussin", "Lapin", "Renard", "Licorne", "Dragon"],
@@ -50,6 +49,10 @@ const I18N = {
         enter: "Openen",
         time: "Tijd",
         best_time: "Recordtijd",
+        test: "Test",
+        create: "Maken",
+        game_over_title: "Game Over",
+        game_over_text: "Je hebt al je levens verloren! Probeer opnieuw.",
         exam_title: "Verrassingsexamen",
         exam_desc: "Een mix van alles om je kennis te testen!",
         pet_stages: ["Ei", "Kuiken", "Konijn", "Vos", "Eenhoorn", "Draak"],
@@ -106,18 +109,37 @@ function showErr(msg) {
 window.addEventListener("error", (e) => showErr("JS ERROR:\n" + (e?.message || "Unknown")));
 window.addEventListener("unhandledrejection", (e) => showErr("PROMISE ERROR:\n" + (e?.reason?.message || String(e?.reason || "Unknown"))));
 
-// ===== Theme Logic =====
+// ===== Theme & Contrast Logic =====
+function getLuminance(hexColor) {
+    if (!hexColor || hexColor.length < 4) return 0;
+    const rgb = parseInt(hexColor.slice(1), 16);
+    const r = (rgb >> 16) & 0xff;
+    const g = (rgb >> 8) & 0xff;
+    const b = (rgb >> 0) & 0xff;
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+}
+
+function updateContrast(bgColor) {
+    const root = document.documentElement.style;
+    const lum = getLuminance(bgColor);
+    if (lum > 0.5) { // Light background
+        root.setProperty('--text', '#1a202c');
+        root.setProperty('--muted', 'rgba(0, 0, 0, 0.55)');
+        root.setProperty('--line', 'rgba(0, 0, 0, 0.1)');
+    } else { // Dark background
+        root.setProperty('--text', '#eef1ff');
+        root.setProperty('--muted', 'rgba(238, 241, 255, 0.72)');
+        root.setProperty('--line', 'rgba(255, 255, 255, 0.12)');
+    }
+}
+
 const applyTheme = (t) => {
     const root = document.documentElement.style;
     root.setProperty("--accent", t.accent);
     root.setProperty("--accent2", t.accent2);
     root.setProperty("--bg0", t.bg0);
     root.setProperty("--bg1", t.bg1);
-    // Extended properties for Light Mode
-    if (t.text) root.setProperty("--text", t.text);
-    if (t.card) root.setProperty("--card", t.card);
-    if (t.card2) root.setProperty("--card2", t.card2);
-    if (t.line) root.setProperty("--line", t.line);
+    updateContrast(t.bg1);
 };
 applyTheme(state.theme);
 
@@ -180,13 +202,23 @@ function explainMath(op, a, b, ans) {
 
 // Data Generators (Called on Start)
 function makeMath(level, mode, maxV) {
-    const ops = (mode === "divfocus") ? ["÷", "÷", "÷", "+", "−"] :
-        (mode === "mulfocus") ? ["×", "×", "×", "+", "−"] :
-            ["+", "−", "×", "÷"];
+    let ops;
+    if (mode !== 'mix') {
+        const opChar = mode === 'divfocus' ? '÷' : mode === 'mulfocus' ? '×' : mode.replace('add', '+').replace('sub', '−');
+        ops = [opChar];
+    } else {
+        if (level === 'easy') {
+            ops = ['+', '+', '+', '+', '-', '-']; // 66% add, 33% sub
+        } else if (level === 'hard') {
+            ops = ['+', '-', '×', '×', '÷']; // 20% each, but more complex ops
+        } else { // mid
+            ops = ['+', '+', '-', '×', '÷']; // 40% add, 20% each for others
+        }
+    }
     const op = ops[rnd(0, ops.length - 1)];
     const cap = clamp(maxV, 100, 10000);
     const scale = (level === "easy") ? 0.35 : (level === "mid") ? 0.6 : 1.0;
-    let a, b, ans;
+    let a, b, ans, options = null;
 
     if (op === "+") { a = rnd(10, Math.floor(cap * scale)); b = rnd(10, Math.floor(cap * scale)); ans = a + b; }
     if (op === "−") { a = rnd(10, Math.floor(cap * scale)); b = rnd(10, Math.floor(cap * scale)); if (b > a) [a, b] = [b, a]; ans = a - b; }
@@ -198,7 +230,16 @@ function makeMath(level, mode, maxV) {
         if (a > cap) { const q2 = Math.max(2, Math.floor(cap / b)); a = b * q2; ans = q2; } else ans = q;
     }
 
-    return { type: "math", op, a, b, ans };
+    // Generate options for Math (Didactic: make it easier to select than type)
+    const correct = ans;
+    const distractors = new Set();
+    while (distractors.size < 3) {
+        let d = correct + rnd(-5, 5); // Close values
+        if (d !== correct && d >= 0) distractors.add(d);
+        if (distractors.size < 3) distractors.add(correct + rnd(10, 20)); // Fallback
+    }
+    const options = [correct, ...distractors].sort(() => Math.random() - 0.5);
+    return { type: "math", op, a, b, ans, options };
 }
 
 function makeLogic(kind) {
@@ -559,7 +600,7 @@ function finishSession(label, key, res, count) {
 
 // ===== View Controllers =====
 let mathP = [], logicP = [], storyP = [];
-let examP = []; // Exam problems
+let examP = [], examLives = 3; // Exam state
 let mathTimerInterval = null, mathStartTime = 0; // Timer variables
 const mathList = document.getElementById("mathList");
 const logicList = document.getElementById("logicList");
@@ -587,6 +628,28 @@ function generateUnique(count, generatorFn) {
         attempts++;
     }
     return result;
+}
+
+function resetSessionState(listEl, scoreEl, okEl, badEl, timerEl) {
+    listEl.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--muted);">...</div>`;
+    if (scoreEl) scoreEl.textContent = "—";
+    if (okEl) okEl.textContent = "—";
+    if (badEl) badEl.textContent = "—";
+    if (timerEl) {
+        clearInterval(mathTimerInterval);
+        timerEl.textContent = "00:00";
+    }
+}
+
+function fadeAndRegenerate(listEl, generatorFn) {
+    listEl.style.opacity = 0;
+    setTimeout(() => {
+        const problems = generatorFn();
+        listEl.innerHTML = "";
+        problems.forEach((p, i) => renderProblem(listEl, p, i));
+        listEl.style.opacity = 1;
+        return problems;
+    }, 200);
 }
 
 const updateMathTimer = () => {
@@ -643,14 +706,17 @@ function setupControllers() {
     };
     document.getElementById("backFromMath").onclick = () => show(viewHome);
 
-    // Logic
-    document.getElementById("startLogic").onclick = () => {
-        const count = Number(document.getElementById("logicCount").value || 20);
-        const kind = document.getElementById("logicKind").value;
-        logicP = generateUnique(count, () => makeLogic(kind));
-        logicList.innerHTML = ""; logicP.forEach((p, i) => renderProblem(logicList, p, i));
-        document.getElementById("logicScore").textContent = "—";
-    };
+    function regenerateLogicExercises() {
+        resetSessionState(logicList, document.getElementById("logicScore"), document.getElementById("logicOk"), document.getElementById("logicBad"));
+        fadeAndRegenerate(logicList, () => {
+            const count = Number(document.getElementById("logicCount").value || 20);
+            const kind = document.getElementById("logicKind").value;
+            logicP = generateUnique(count, () => makeLogic(kind));
+            return logicP;
+        });
+    }
+    document.getElementById("startLogic").onclick = regenerateLogicExercises;
+    ["logicCount", "logicKind"].forEach(id => document.getElementById(id).addEventListener("change", regenerateLogicExercises));
     document.getElementById("checkLogic").onclick = () => {
         const res = check(logicList, logicP);
         document.getElementById("logicScore").textContent = res.scorePct + "%";
@@ -665,14 +731,17 @@ function setupControllers() {
     };
     document.getElementById("backFromLogic").onclick = () => show(viewHome);
 
-    // Story
-    document.getElementById("startStory").onclick = () => {
-        const count = Number(document.getElementById("storyCount").value || 12);
-        const theme = document.getElementById("storyTheme").value;
-        storyP = generateUnique(count, () => makeStory(theme));
-        storyList.innerHTML = ""; storyP.forEach((p, i) => renderProblem(storyList, p, i));
-        document.getElementById("storyScore").textContent = "—";
-    };
+    function regenerateStoryExercises() {
+        resetSessionState(storyList, document.getElementById("storyScore"), document.getElementById("storyOk"), document.getElementById("storyBad"));
+        fadeAndRegenerate(storyList, () => {
+            const count = Number(document.getElementById("storyCount").value || 12);
+            const theme = document.getElementById("storyTheme").value;
+            storyP = generateUnique(count, () => makeStory(theme));
+            return storyP;
+        });
+    }
+    document.getElementById("startStory").onclick = regenerateStoryExercises;
+    ["storyCount", "storyTheme"].forEach(id => document.getElementById(id).addEventListener("change", regenerateStoryExercises));
     document.getElementById("checkStory").onclick = () => {
         const res = check(storyList, storyP);
         document.getElementById("storyScore").textContent = res.scorePct + "%";
@@ -689,26 +758,67 @@ function setupControllers() {
 
     // Exam (Surprise)
     document.getElementById("startExam").onclick = () => {
-        examP = [];
+        const lvl = document.getElementById("examLevel").value;
         // Mix: 8 Math, 8 Logic, 4 Story
-        for (let i = 0; i < 8; i++) examP.push(makeMath("mid", "mix", 1000));
-        for (let i = 0; i < 8; i++) examP.push(makeLogic("mix"));
-        for (let i = 0; i < 4; i++) examP.push(makeStory("mix"));
+        examP = generateUnique(8, () => makeMath(lvl, "mix", (lvl === "easy" ? 100 : 1000)));
+        examP.push(...generateUnique(8, () => makeLogic("mix")));
+        examP.push(...generateUnique(4, () => makeStory("mix")));
         // Shuffle
         examP.sort(() => Math.random() - 0.5);
 
         examList.innerHTML = "";
         examP.forEach((p, i) => renderProblem(examList, p, i));
         document.getElementById("examScore").textContent = "—";
+
+        // Reset lives
+        examLives = 3;
+        renderLives(examLives);
+        document.getElementById("checkExam").disabled = false;
     };
     document.getElementById("checkExam").onclick = () => {
+        if (examLives <= 0) return;
+
         const res = check(examList, examP);
+        const livesLost = res.bad;
+        const oldLives = examLives;
+        examLives = Math.max(0, examLives - livesLost);
+        renderLives(examLives, oldLives);
+
         document.getElementById("examScore").textContent = res.scorePct + "%";
         document.getElementById("examOk").textContent = res.ok;
         document.getElementById("examBad").textContent = res.bad;
+
         finishSession("Exam", "exam", res, examP.length);
+
+        if (examLives <= 0) {
+            document.getElementById("gameOverBack").style.display = "flex";
+            document.getElementById("checkExam").disabled = true;
+        }
     };
     document.getElementById("backFromExam").onclick = () => show(viewHome);
+
+    // Custom Practice Start
+    document.getElementById("startCustom").onclick = () => {
+        const type = document.getElementById("custType").value;
+        const count = Number(document.getElementById("custCount").value);
+        const max = Number(document.getElementById("custMax").value);
+        const op = document.getElementById("custOp").value;
+
+        // Reuse Math View for custom session
+        mathP = [];
+        if (type === "math") {
+            const mode = (op === "mix") ? "mix" : (op === "div") ? "divfocus" : (op === "mul") ? "mulfocus" : "mix"; // Simplified mapping
+            mathP = generateUnique(count, () => makeMath("mid", mode, max));
+            show(viewMath);
+            mathList.innerHTML = ""; mathP.forEach((p, i) => renderProblem(mathList, p, i));
+            document.getElementById("customBack").style.display = "none";
+        } else {
+            // Logic custom... (simplified for now, redirects to logic view)
+            show(viewLogic);
+            document.getElementById("customBack").style.display = "none";
+            document.getElementById("startLogic").click();
+        }
+    };
 }
 
 // ===== Level Up & Effects =====
@@ -737,6 +847,22 @@ function spawnConfetti() {
         c.style.animationDuration = (Math.random() * 2 + 1.5) + "s";
         document.body.appendChild(c);
         setTimeout(() => c.remove(), 4000);
+    }
+}
+
+function renderLives(current, initial = 3) {
+    const container = document.getElementById("examLivesContainer");
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 1; i <= 3; i++) {
+        const heart = document.createElement('span');
+        heart.className = 'heart';
+        heart.textContent = '❤️';
+        if (i > current) heart.classList.add('lost');
+        if (i > current && i <= initial) {
+            setTimeout(() => heart.classList.add('shake'), (i - current) * 200);
+        }
+        container.appendChild(heart);
     }
 }
 
@@ -807,26 +933,45 @@ function renderCards() {
     const box = document.getElementById("moduleCards");
     box.innerHTML = "";
     const c = T().cards;
+    const mkBtn = (id, txt, isPrimary = true) => `<button class="${isPrimary ? 'btnPrimary' : ''}" id="${id}" style="font-size:11px; padding:8px 12px">${txt}</button>`;
 
     const mk = (tag, title, desc, btnId) => `
     <div class="card">
       <div class="tag">${tag}</div>
       <h3>${title}</h3>
       <p>${desc}</p>
-      <div class="cta">
-        <button class="btnPrimary" id="${btnId}">${T().enter}</button>
-        <span class="pill">${T().record}: <b>${pct(state.stats.best[btnId.includes("Math") ? "math" : btnId.includes("Logic") ? "logic" : "story"] || 0)}</b></span>
+      <div class="cta" style="justify-content:space-between; width:100%; margin-top: auto;">
+        <div style="display:flex; gap:6px">
+            ${mkBtn(btnId, btnId === 'goCustom' ? T().create : T().enter)}
+            ${btnId !== 'goExam' && btnId !== 'goCustom' ? mkBtn(btnId + 'Test', T().test, false) : ''}
+        </div>
+        ${btnId !== 'goCustom' ? `<span class="pill" style="font-size:10px">${T().record}: <b>${pct(state.stats.best[
+        btnId.includes("Math") ? "math" :
+            btnId.includes("Logic") ? "logic" :
+                btnId.includes("Story") ? "story" : "exam"
+    ] || 0)}</b></span>` : ''}
       </div>
     </div>`;
     box.insertAdjacentHTML("beforeend", mk(c.mTag, c.mTitle, c.mDesc, "goMath"));
     box.insertAdjacentHTML("beforeend", mk(c.lTag, c.lTitle, c.lDesc, "goLogic"));
     box.insertAdjacentHTML("beforeend", mk(c.sTag, c.sTitle, c.sDesc, "goStory"));
     box.insertAdjacentHTML("beforeend", mk("Mix", T().exam_title, T().exam_desc, "goExam"));
+    box.insertAdjacentHTML("beforeend", mk("Perso", T().workshop_title, "Crée tes exercices.", "goCustom"));
 
     document.getElementById("goMath").onclick = () => show(viewMath);
     document.getElementById("goLogic").onclick = () => show(viewLogic);
     document.getElementById("goStory").onclick = () => show(viewStory);
     document.getElementById("goExam").onclick = () => show(viewExam);
+
+    // Specific Test Buttons (Quick Exam Mode per topic)
+    document.getElementById("goMathTest").onclick = () => { show(viewMath); document.getElementById("startMath").click(); };
+    document.getElementById("goLogicTest").onclick = () => { show(viewLogic); document.getElementById("startLogic").click(); };
+    document.getElementById("goStoryTest").onclick = () => { show(viewStory); document.getElementById("startStory").click(); };
+
+    // Custom Practice
+    const custBack = document.getElementById("customBack");
+    if (document.getElementById("goCustom")) document.getElementById("goCustom").onclick = () => custBack.style.display = "flex";
+    document.getElementById("closeCustom").onclick = () => custBack.style.display = "none";
 }
 
 function renderBadgesModal() {
@@ -857,6 +1002,12 @@ function applyLang() {
     document.getElementById("ui_exam_dash").textContent = T().exam_title;
     document.getElementById("ui_exam_dash_meta").textContent = T().exam_desc;
 
+    document.getElementById("ui_gameOverTitle").textContent = T().game_over_title;
+    document.getElementById("ui_gameOverText").textContent = T().game_over_text;
+
+    document.getElementById("ui_gameOverTitle").textContent = T().game_over_title;
+    document.getElementById("ui_gameOverText").textContent = T().game_over_text;
+
     // Re-render active lists to update text
     if (!viewMath.classList.contains("hidden") && mathP.length) { mathList.innerHTML = ""; mathP.forEach((p, i) => renderProblem(mathList, p, i)); }
     if (!viewLogic.classList.contains("hidden") && logicP.length) { logicList.innerHTML = ""; logicP.forEach((p, i) => renderProblem(logicList, p, i)); }
@@ -865,6 +1016,7 @@ function applyLang() {
 
     renderCards();
     renderDashboard();
+    renderWeeklyChart();
     renderPet();
 }
 
@@ -880,17 +1032,35 @@ function autoTheme() {
     }
 }
 
+const findPresetNameByTheme = (theme) => {
+    for (const name in PRESETS) {
+        const p = PRESETS[name];
+        if (p.accent === theme.accent && p.accent2 === theme.accent2 && p.bg0 === theme.bg0 && p.bg1 === theme.bg1) {
+            return name;
+        }
+    }
+    return null;
+}
+
 // ===== Initialization =====
 document.getElementById("langBtn").addEventListener("click", () => { lang = (lang === "fr") ? "nl" : "fr"; save("lang", lang); applyLang(); });
 document.getElementById("homeBtn").addEventListener("click", () => show(viewHome));
 
 // Theme Modal
 const themeBack = document.getElementById("themeBack");
+const themeInputs = ["accentPick", "accent2Pick", "bg0Pick", "bg1Pick"];
 document.getElementById("themeBtn").onclick = () => {
     document.getElementById("accentPick").value = state.theme.accent;
     document.getElementById("accent2Pick").value = state.theme.accent2;
     document.getElementById("bg0Pick").value = state.theme.bg0;
     document.getElementById("bg1Pick").value = state.theme.bg1;
+
+    document.querySelectorAll(".preset").forEach(p => p.classList.remove("activeTheme"));
+    const activePresetName = findPresetNameByTheme(state.theme);
+    if (activePresetName) {
+        const activeEl = document.querySelector(`.preset[data-preset="${activePresetName}"]`);
+        if (activeEl) activeEl.classList.add("activeTheme");
+    }
     themeBack.style.display = "flex";
 };
 document.getElementById("closeTheme").onclick = () => themeBack.style.display = "none";
@@ -902,19 +1072,26 @@ document.querySelectorAll(".preset").forEach(el => {
         document.getElementById("accent2Pick").value = p.accent2;
         document.getElementById("bg0Pick").value = p.bg0;
         document.getElementById("bg1Pick").value = p.bg1;
+        document.querySelectorAll(".preset").forEach(x => x.classList.remove("activeTheme"));
+        el.classList.add("activeTheme");
     };
 });
 document.getElementById("saveTheme").onclick = () => {
-    state.theme = {
+    const newTheme = {
         accent: document.getElementById("accentPick").value,
         accent2: document.getElementById("accent2Pick").value,
         bg0: document.getElementById("bg0Pick").value,
         bg1: document.getElementById("bg1Pick").value
     };
-    applyTheme(state.theme);
-    save("theme", state.theme);
+    state.theme = newTheme;
+    applyTheme(newTheme);
+    save("theme", newTheme);
     themeBack.style.display = "none";
 };
+themeInputs.forEach(id => document.getElementById(id).addEventListener("input", () => {
+    const tempTheme = { accent: accentPick.value, accent2: accent2Pick.value, bg0: bg0Pick.value, bg1: bg1Pick.value };
+    applyTheme(tempTheme);
+}));
 
 // Welcome Modal
 const welcomeBack = document.getElementById("welcomeBack");
@@ -942,8 +1119,13 @@ document.getElementById("ui_kpi_badges").onclick = () => { renderBadgesModal(); 
 document.getElementById("closeBadges").onclick = () => badgesBack.style.display = "none";
 badgesBack.addEventListener("click", (e) => { if (e.target === badgesBack) badgesBack.style.display = "none"; });
 
+// Game Over Modal
+const gameOverBack = document.getElementById("gameOverBack");
+document.getElementById("closeGameOver").onclick = () => gameOverBack.style.display = "none";
+gameOverBack.addEventListener("click", (e) => { if (e.target === gameOverBack) gameOverBack.style.display = "none"; });
+
 // Boot
-setupControllers();
+initEventListeners();
 autoTheme(); // Check time on load
 applyLang();
 renderCards();

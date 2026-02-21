@@ -301,10 +301,17 @@
 
         <div class="toolbar">
           <div class="left">
-            <label class="small">Mélange</label>
+            <label class="small">Contenu</label>
             <span class="pill">Maths + Logique + Scénarios</span>
+            <label class="small">Niveau</label>
+            <select id="examLevel">
+              <option value="easy">Facile</option>
+              <option value="mid" selected>Moyen</option>
+              <option value="hard">Difficile</option>
+            </select>
           </div>
           <div class="right">
+            <div id="examLivesContainer" class="livesContainer"></div>
             <button id="startExam" class="btnPrimary">Générer l'examen</button>
             <button id="checkExam">Corriger</button>
             <button id="backFromExam">← Dashboard</button>
@@ -412,6 +419,16 @@
       <p>Collectionne-les tous !</p>
       <div class="badgeGrid" id="badgeGrid"></div>
       <div style="margin-top:16px; text-align:center"><button id="closeBadges">Fermer</button></div>
+    </div>
+  </div>
+
+  <!-- GAME OVER MODAL -->
+  <div class="modalBack" id="gameOverBack">
+    <div class="modal levelUpModal">
+      <div class="trophy" style="font-size: 64px; animation: none;">💔</div>
+      <h3 id="ui_gameOverTitle" style="font-size: 24px; color: var(--bad);">Game Over</h3>
+      <p id="ui_gameOverText">Tu as perdu toutes tes vies !</p>
+      <button id="closeGameOver" class="btnPrimary">OK</button>
     </div>
   </div>
 </body>
