@@ -21,6 +21,7 @@
         <span class="pill">🏆 <span id="ui_bestPill">Record</span>: <b id="bestAllPill">0%</b></span>
         <span class="pill">🔥 <span id="ui_streakPill">Streak</span>: <b id="streakPill">0</b></span>
         <button id="langBtn">FR → NL</button>
+        <div id="fireWidget"><span class="fireIcon">🔥🔥</span> <span id="fireCount">0</span></div>
         <span class="pill xpPill">
           Lvl <b id="levelPill">1</b>
           <div class="xpBar">
@@ -36,8 +37,24 @@
   <div class="wrap">
     <div id="errorBar" class="errorBar"></div>
 
+    <!-- BADGE TOAST -->
+    <div id="badgeToast" class="badgeToast">
+      <div class="badgeToastIcon">🏅</div>
+      <div class="badgeToastText">
+        <div class="badgeToastTitle">Nouveau Badge !</div>
+        <div class="badgeToastDesc">Tu as débloqué un succès.</div>
+      </div>
+    </div>
+
     <!-- HOME -->
     <div id="viewHome">
+      <!-- PET PANEL -->
+      <div class="petPanel">
+        <div class="petAvatar" id="petAvatar">🥚</div>
+        <div class="petName" id="petName">Oeuf Mystère</div>
+        <div class="petStatus" id="petStatus">Niveau 1 requis pour éclore...</div>
+      </div>
+
       <div class="panel">
         <div class="sectionTitle">
           <h2 id="ui_overviewTitle">Aperçu</h2>
@@ -59,7 +76,7 @@
             <div class="value" id="kpiSessions">0</div>
           </div>
           <div class="kpi">
-            <div class="label" id="ui_kpi_badges">Badges</div>
+            <div class="label" id="ui_kpi_badges" style="cursor:pointer; text-decoration:underline">Badges</div>
             <div class="value" id="kpiBadges">0</div>
           </div>
         </div>
@@ -178,6 +195,7 @@
               <option value="sequence">Suite</option>
               <option value="odd">Intrus</option>
               <option value="rule">Règle</option>
+              <option value="color">Couleurs</option>
             </select>
           </div>
           <div class="right">
@@ -236,6 +254,9 @@
               <option value="boxes">Boîtes</option>
               <option value="school">École</option>
               <option value="shop">Magasin</option>
+              <option value="cinema">Ciné</option>
+              <option value="garden">Jardin</option>
+              <option value="cooking">Cuisine</option>
             </select>
           </div>
           <div class="right">
@@ -265,6 +286,46 @@
           <div class="kpi">
             <div class="label" id="ui_s_best3">Record</div>
             <div class="value" id="storyBest2">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXAM (SURPRISE) -->
+    <div id="viewExam" class="hidden">
+      <div class="panel">
+        <div class="sectionTitle">
+          <h2 id="ui_exam_dash">Examen Sorpresa</h2>
+          <div class="meta" id="ui_exam_dash_meta">Mélange de tout ! Prête ?</div>
+        </div>
+
+        <div class="toolbar">
+          <div class="left">
+            <label class="small">Mélange</label>
+            <span class="pill">Maths + Logique + Scénarios</span>
+          </div>
+          <div class="right">
+            <button id="startExam" class="btnPrimary">Générer l'examen</button>
+            <button id="checkExam">Corriger</button>
+            <button id="backFromExam">← Dashboard</button>
+          </div>
+        </div>
+
+        <div class="qList" id="examList"></div>
+
+        <div class="divider"></div>
+        <div class="kpis">
+          <div class="kpi">
+            <div class="label">Score</div>
+            <div class="value ok" id="examScore">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Correct</div>
+            <div class="value ok" id="examOk">—</div>
+          </div>
+          <div class="kpi">
+            <div class="label">Incorrect</div>
+            <div class="value bad" id="examBad">—</div>
           </div>
         </div>
       </div>
@@ -341,6 +402,16 @@
       <div class="levelNumber" id="ui_newLevel">2</div>
       <p>Incroyable ! Tu deviens super forte ! 🎉</p>
       <button id="closeLevelUp" class="btnPrimary" style="font-size:16px; padding: 12px 24px;">Génial !</button>
+    </div>
+  </div>
+
+  <!-- BADGES MODAL -->
+  <div class="modalBack" id="badgesBack">
+    <div class="modal">
+      <h3>Mes Badges</h3>
+      <p>Collectionne-les tous !</p>
+      <div class="badgeGrid" id="badgeGrid"></div>
+      <div style="margin-top:16px; text-align:center"><button id="closeBadges">Fermer</button></div>
     </div>
   </div>
 </body>
