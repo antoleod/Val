@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Calculs – Oefenen (FR/NL)</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#121a33; --muted:#9fb0ff; --text:#e9edff;
+      --ok:#35d07f; --bad:#ff5b6e; --line:rgba(255,255,255,.12);
+      --btn:#2a3cff; --btn2:#26304f;
+    }
+    body{margin:0;background:linear-gradient(160deg,#070a14,#0b1020 55%,#0a1230);
+      color:var(--text); font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;
+    }
+    .wrap{max-width:980px;margin:0 auto;padding:18px}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+    .brand{display:flex;flex-direction:column;gap:4px}
+    .title{font-size:20px;font-weight:800;letter-spacing:.2px}
+    .subtitle{font-size:13px;color:rgba(233,237,255,.75)}
+    .bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .card{background:rgba(18,26,51,.85); border:1px solid var(--line); border-radius:14px;
+      padding:14px; box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .controls{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;align-items:end}
+    @media (max-width:850px){.controls{grid-template-columns:1fr;}}
+    label{font-size:12px;color:rgba(233,237,255,.8)}
+    select,input[type="number"]{width:100%;margin-top:6px;background:#0b1230;color:var(--text);
+      border:1px solid var(--line);border-radius:10px;padding:10px 10px;font-size:14px;
+    }
+    .ops{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .chip{display:flex;gap:8px;align-items:center;background:rgba(255,255,255,.06);
+      border:1px solid var(--line);padding:8px 10px;border-radius:999px;
+    }
+    .chip input{transform:scale(1.05)}
+    button{border:0;border-radius:12px;padding:10px 12px;font-weight:700;
+      color:var(--text);cursor:pointer
+    }
+    .btn{background:var(--btn)}
+    .btn2{background:var(--btn2);border:1px solid var(--line)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}
+    .q{display:grid;grid-template-columns:1fr 160px;gap:10px;align-items:start}
+    @media (max-width:700px){.q{grid-template-columns:1fr}}
+    .qbox{background:rgba(255,255,255,.04); border:1px solid var(--line);
+      border-radius:14px;padding:12px
+    }
+    .qtop{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+    .expr{font-size:18px;font-weight:900}
+    .meta{font-size:12px;color:rgba(233,237,255,.75)}
+    .answer{display:flex;gap:8px;align-items:center;margin-top:10px}
+    .answer input{flex:1;background:#0b1230;color:var(--text);border:1px solid var(--line);
+      border-radius:10px;padding:10px;font-size:15px
+    }
+    .status{font-weight:900}
+    details{margin-top:8px}
+    summary{cursor:pointer;color:var(--muted);font-weight:800}
+    .hint,.steps{margin-top:6px;font-size:13px;color:rgba(233,237,255,.85);line-height:1.35}
+    .side{display:flex;flex-direction:column;gap:10px}
+    .score{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+    .pill{padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05)}
+    .ok{color:var(--ok)} .bad{color:var(--bad)}
+    .small{font-size:12px;color:rgba(233,237,255,.75)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="title" id="ui_title">Entraînement aux calculs (jusqu’à 10 000)</div>
+        <div class="subtitle" id="ui_subtitle">Génère 20–30 exercices aléatoires + indices + étapes.</div>
+      </div>
+      <div class="bar">
+        <button class="btn2" id="langBtn" type="button">FR → NL</button>
+        <button class="btn2" id="resetBtn" type="button">Réinitialiser</button>
+      </div>
+    </header>
+
+    <div class="card" style="margin-top:14px">
+      <div class="controls">
+        <div>
+          <label id="ui_count_lbl">Nombre d’exercices</label>
+          <select id="count">
+            <option value="20">20</option>
+            <option value="30">30</option>
+          </select>
+          <div class="ops" aria-label="operations">
+            <label class="chip"><input type="checkbox" id="op_add" checked /> <span id="ui_add">Addition</span></label>
+            <label class="chip"><input type="checkbox" id="op_sub" checked /> <span id="ui_sub">Soustraction</span></label>
+            <label class="chip"><input type="checkbox" id="op_mul" checked /> <span id="ui_mul">Multiplication</span></label>
+            <label class="chip"><input type="checkbox" id="op_div" checked /> <span id="ui_div">Division</span></label>
+          </div>
+        </div>
+
+        <div>
+          <label id="ui_max_lbl">Valeur max (jusqu’à 10 000)</label>
+          <input id="maxVal" type="number" min="20" max="10000" step="10" value="10000" />
+          <div class="small" id="ui_max_help">Conseil : 1000 → plus simple, 10 000 → plus challenge.</div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-direction:column;align-items:stretch">
+          <button class="btn" id="startBtn" type="button">Démarrer le test</button>
+          <button class="btn2" id="checkBtn" type="button" disabled>Corriger</button>
+          <button class="btn2" id="retryWrongBtn" type="button" disabled>Refaire les erreurs</button>
+        </div>
+      </div>
+
+      <div class="grid" id="questions"></div>
+
+      <div class="card" style="margin-top:12px" id="resultCard" hidden>
+        <div class="score">
+          <div class="pill"><span id="ui_score">Score</span>: <b id="scoreTxt">0/0</b></div>
+          <div class="pill"><span id="ui_ok">Correct</span>: <b class="ok" id="okTxt">0</b></div>
+          <div class="pill"><span id="ui_bad">Incorrect</span>: <b class="bad" id="badTxt">0</b></div>
+        </div>
+        <div class="small" style="margin-top:10px" id="ui_tip">
+          Astuce : utilise d’abord une estimation (arrondir), puis fais le calcul posé.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ---------- i18n (FR/NL) ----------
+    const I18N = {
+      fr: {
+        title: "Entraînement aux calculs (jusqu’à 10 000)",
+        subtitle: "Génère 20–30 exercices aléatoires + indices + étapes.",
+        countLbl: "Nombre d’exercices",
+        add: "Addition",
+        sub: "Soustraction",
+        mul: "Multiplication",
+        div: "Division",
+        maxLbl: "Valeur max (jusqu’à 10 000)",
+        maxHelp: "Conseil : 1000 → plus simple, 10 000 → plus challenge.",
+        start: "Démarrer le test",
+        check: "Corriger",
+        retryWrong: "Refaire les erreurs",
+        reset: "Réinitialiser",
+        hint: "Indice",
+        steps: "Étapes",
+        yourAnswer: "Ta réponse",
+        score: "Score",
+        ok: "Correct",
+        bad: "Incorrect",
+        tip: "Astuce : utilise d’abord une estimation (arrondir), puis fais le calcul posé.",
+        needOp: "Choisis au moins une opération (+, −, ×, ÷).",
+        done: "Terminé !",
+        again: "Nouvelle série",
+        langBtn: "FR → NL",
+        qLabel: "Exercice",
+        exactDivNote: "Division exacte (reste = 0).",
+        remainder: "reste",
+      },
+      nl: {
+        title: "Rekenen oefenen (tot 10 000)",
+        subtitle: "Genereert 20–30 willekeurige oefeningen + hints + stappen.",
+        countLbl: "Aantal oefeningen",
+        add: "Optellen",
+        sub: "Aftrekken",
+        mul: "Vermenigvuldigen",
+        div: "Delen",
+        maxLbl: "Max. waarde (tot 10 000)",
+        maxHelp: "Tip: 1000 → makkelijker, 10 000 → uitdagender.",
+        start: "Start de test",
+        check: "Nakijken",
+        retryWrong: "Fouten opnieuw",
+        reset: "Reset",
+        hint: "Hint",
+        steps: "Stappen",
+        yourAnswer: "Jouw antwoord",
+        score: "Score",
+        ok: "Goed",
+        bad: "Fout",
+        tip: "Tip: schat eerst (afronden), daarna reken je cijferend uit.",
+        needOp: "Kies minstens één bewerking (+, −, ×, ÷).",
+        done: "Klaar!",
+        again: "Nieuwe reeks",
+        langBtn: "NL → FR",
+        qLabel: "Oefening",
+        exactDivNote: "Exacte deling (rest = 0).",
+        remainder: "rest",
+      }
+    };
+
+    let lang = "fr";
+    const t = () => I18N[lang];
+
+    function applyLang(){
+      document.documentElement.lang = lang;
+      ui_title.textContent = t().title;
+      ui_subtitle.textContent = t().subtitle;
+      ui_count_lbl.textContent = t().countLbl;
+      ui_add.textContent = t().add;
+      ui_sub.textContent = t().sub;
+      ui_mul.textContent = t().mul;
+      ui_div.textContent = t().div;
+      ui_max_lbl.textContent = t().maxLbl;
+      ui_max_help.textContent = t().maxHelp;
+      startBtn.textContent = t().start;
+      checkBtn.textContent = t().check;
+      retryWrongBtn.textContent = t().retryWrong;
+      resetBtn.textContent = t().reset;
+      ui_score.textContent = t().score;
+      ui_ok.textContent = t().ok;
+      ui_bad.textContent = t().bad;
+      ui_tip.textContent = t().tip;
+      langBtn.textContent = t().langBtn;
+    }
+
+    // ---------- utils ----------
+    const rnd = (min,max)=> Math.floor(Math.random()*(max-min+1))+min;
+    const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+
+    function pickOps(){
+      const ops=[];
+      if(op_add.checked) ops.push("+");
+      if(op_sub.checked) ops.push("−");
+      if(op_mul.checked) ops.push("×");
+      if(op_div.checked) ops.push("÷");
+      return ops;
+    }
+
+    function roundTo(n, base){
+      return Math.round(n/base)*base;
+    }
+
+    // ---------- generate problems ----------
+    function makeProblem(op, maxV){
+      // Keep things "cijferen-friendly"
+      // + and - up to maxV
+      // ×: 2–3 digits times 1–2 digits (or 2 digits) bounded
+      // ÷: exact division (rest 0)
+      let a,b,ans,steps,hint,meta="";
+
+      if(op === "+"){
+        a=rnd(10, maxV);
+        b=rnd(10, maxV);
+        ans=a+b;
+        // hint: estimation
+        const ra=roundTo(a, a>=1000?1000:100);
+        const rb=roundTo(b, b>=1000?1000:100);
+        hint = `${ra} + ${rb} ≈ ${ra+rb}`;
+        steps = [
+          `Aligne les unités, dizaines, centaines…`,
+          `Additionne colonne par colonne, avec retenues si besoin.`,
+          `Vérifie avec une estimation : ${ra} + ${rb} ≈ ${ra+rb}.`
+        ].join("<br>");
+      }
+
+      if(op === "−"){
+        a=rnd(10, maxV);
+        b=rnd(10, maxV);
+        if(b>a){ const tmp=a; a=b; b=tmp; } // non-negative
+        ans=a-b;
+        const ra=roundTo(a, a>=1000?1000:100);
+        const rb=roundTo(b, b>=1000?1000:100);
+        hint = `${ra} − ${rb} ≈ ${ra-rb}`;
+        steps = [
+          `Aligne les chiffres (unités sous unités, etc.).`,
+          `Soustrais colonne par colonne.`,
+          `Si un chiffre du haut est trop petit, emprunte 1 à la colonne de gauche.`,
+          `Contrôle avec l’estimation : ${ra} − ${rb} ≈ ${ra-rb}.`
+        ].join("<br>");
+      }
+
+      if(op === "×"){
+        // try to keep product under about 99999-ish but allow a bit
+        // choose a: 2–3 digits, b: 1–2 digits
+        a = rnd(12, Math.min(999, maxV));
+        b = rnd(2, 99);
+        // adjust to keep within sensible range
+        if(a*b > maxV*10) b = rnd(2, 19);
+        ans = a*b;
+
+        const ra=roundTo(a, a>=500?100:10);
+        const rb=roundTo(b, b>=50?10:1);
+        hint = `${ra} × ${rb} ≈ ${ra*rb}`;
+
+        steps = [
+          `Méthode rapide : ${a} × ${b} = ${a} × ( ${b} ).`,
+          `Fais le calcul posé : multiplie par les unités, puis par les dizaines.`,
+          `Additionne les résultats (en décalant d’une colonne pour les dizaines).`,
+          `Estimation : ${ra} × ${rb} ≈ ${ra*rb}.`
+        ].join("<br>");
+      }
+
+      if(op === "÷"){
+        // exact division
+        b = rnd(2, 99);
+        const q = rnd(2, 200); // quotient
+        a = b * q;
+        // keep dividend within range
+        if(a > maxV){
+          const q2 = Math.max(2, Math.floor(maxV / b));
+          a = b * q2;
+          ans = q2;
+        } else {
+          ans = q;
+        }
+        meta = t().exactDivNote;
+
+        const ra=roundTo(a, a>=1000?1000:100);
+        const rb=roundTo(b, b>=50?10:1);
+        const approx = Math.floor(ra/rb);
+        hint = `${ra} ÷ ${rb} ≈ ${approx}`;
+
+        steps = [
+          `Division posée : combien de fois ${b} rentre dans ${a} ?`,
+          `Écris le quotient petit à petit, soustrais à chaque étape.`,
+          `Ici la division est exacte (pas de reste).`,
+          `Contrôle : résultat × ${b} = ${a}.`
+        ].join("<br>");
+      }
+
+      return { op, a, b, ans, hint, steps, meta };
+    }
+
+    function fmtExpr(p){
+      return `${p.a} ${p.op} ${p.b}`;
+    }
+
+    // ---------- render ----------
+    let problems = [];
+    let showingWrongOnly = false;
+
+    function render(){
+      questions.innerHTML = "";
+      const list = problems;
+
+      list.forEach((p, idx)=>{
+        const div = document.createElement("div");
+        div.className = "q";
+
+        div.innerHTML = `
+          <div class="qbox">
+            <div class="qtop">
+              <div class="expr">${t().qLabel} ${idx+1} — ${fmtExpr(p)}</div>
+              <div class="meta">${p.meta || ""}</div>
+            </div>
+
+            <div class="answer">
+              <input inputmode="numeric" pattern="-?[0-9]*" placeholder="${t().yourAnswer}" data-idx="${idx}" />
+              <span class="status" data-status="${idx}"></span>
+            </div>
+
+            <details>
+              <summary>${t().hint}</summary>
+              <div class="hint">${p.hint}</div>
+            </details>
+
+            <details>
+              <summary>${t().steps}</summary>
+              <div class="steps">${p.steps}</div>
+            </details>
+          </div>
+
+          <div class="side">
+            <button class="btn2" type="button" data-reveal="${idx}">✓ / ✗</button>
+            <div class="pill small" data-solution="${idx}" hidden></div>
+          </div>
+        `;
+
+        questions.appendChild(div);
+      });
+
+      // Hook reveal buttons
+      document.querySelectorAll("[data-reveal]").forEach(btn=>{
+        btn.addEventListener("click", ()=>{
+          const i = Number(btn.getAttribute("data-reveal"));
+          const sol = document.querySelector(`[data-solution="${i}"]`);
+          sol.hidden = !sol.hidden;
+          sol.textContent = `= ${problems[i].ans}`;
+        });
+      });
+    }
+
+    // ---------- check ----------
+    function checkAll(){
+      let ok=0, bad=0;
+      problems.forEach((p, idx)=>{
+        const input = document.querySelector(`input[data-idx="${idx}"]`);
+        const status = document.querySelector(`[data-status="${idx}"]`);
+        const val = (input?.value ?? "").trim();
+
+        let correct = false;
+        if(val !== "" && /^-?\d+$/.test(val)){
+          correct = (Number(val) === p.ans);
+        }
+        p._user = val;
+        p._correct = correct;
+
+        if(correct){
+          ok++;
+          status.textContent = "✔";
+          status.className = "status ok";
+        } else {
+          bad++;
+          status.textContent = "✘";
+          status.className = "status bad";
+        }
+      });
+
+      scoreTxt.textContent = `${ok}/${problems.length}`;
+      okTxt.textContent = String(ok);
+      badTxt.textContent = String(bad);
+      resultCard.hidden = false;
+
+      retryWrongBtn.disabled = bad === 0;
+    }
+
+    function retryWrong(){
+      const wrong = problems.filter(p => !p._correct);
+      problems = wrong.map(p => {
+        // regenerate same expression or keep? We'll keep same to learn.
+        const copy = {...p};
+        delete copy._user;
+        delete copy._correct;
+        return copy;
+      });
+      resultCard.hidden = true;
+      checkBtn.disabled = problems.length === 0;
+      retryWrongBtn.disabled = true;
+      render();
+    }
+
+    // ---------- start/reset ----------
+    function start(){
+      const ops = pickOps();
+      if(ops.length === 0){
+        alert(t().needOp);
+        return;
+      }
+      const countN = Number(count.value) || 20;
+      const maxV = clamp(Number(maxVal.value) || 10000, 20, 10000);
+
+      problems = [];
+      for(let i=0;i<countN;i++){
+        const op = ops[rnd(0, ops.length-1)];
+        problems.push(makeProblem(op, maxV));
+      }
+
+      resultCard.hidden = true;
+      checkBtn.disabled = false;
+      retryWrongBtn.disabled = true;
+      render();
+      // Focus first input
+      setTimeout(()=>{
+        const first = document.querySelector(`input[data-idx="0"]`);
+        if(first) first.focus();
+      }, 0);
+    }
+
+    function reset(){
+      problems = [];
+      questions.innerHTML = "";
+      resultCard.hidden = true;
+      checkBtn.disabled = true;
+      retryWrongBtn.disabled = true;
+    }
+
+    // ---------- events ----------
+    startBtn.addEventListener("click", start);
+    checkBtn.addEventListener("click", checkAll);
+    retryWrongBtn.addEventListener("click", retryWrong);
+    resetBtn.addEventListener("click", reset);
+
+    langBtn.addEventListener("click", ()=>{
+      lang = (lang === "fr") ? "nl" : "fr";
+      applyLang();
+      // re-render to update labels inside questions (Hint/Steps placeholders)
+      if(problems.length) render();
+    });
+
+    // init
+    applyLang();
+  </script>
+</body>
+</html>
