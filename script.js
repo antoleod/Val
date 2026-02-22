@@ -26,6 +26,10 @@ const I18N = {
         best_time: "Record temps",
         test: "Test",
         create: "Créer",
+        workshop_title: "Atelier perso",
+        shop_buy: "Acheter",
+        shop_equip: "Equiper",
+        shop_equipped: "Equipe",
         game_over_title: "Game Over",
         game_over_text: "Tu as perdu toutes tes vies ! Essaie encore.",
         exam_title: "Examen Surprise",
@@ -51,6 +55,10 @@ const I18N = {
         best_time: "Recordtijd",
         test: "Test",
         create: "Maken",
+        workshop_title: "Eigen atelier",
+        shop_buy: "Kopen",
+        shop_equip: "Uitrusten",
+        shop_equipped: "Uitgerust",
         game_over_title: "Game Over",
         game_over_text: "Je hebt al je levens verloren! Probeer opnieuw.",
         exam_title: "Verrassingsexamen",
@@ -248,7 +256,7 @@ function makeMath(level, mode, maxV) {
         if (d !== correct && d >= 0) distractors.add(d);
         if (distractors.size < 3) distractors.add(correct + rnd(10, 20)); // Fallback
     }
-    const options = [correct, ...distractors].sort(() => Math.random() - 0.5);
+    options = [correct, ...distractors].sort(() => Math.random() - 0.5);
     return { type: "math", op, a, b, ans, options };
 }
 
@@ -809,11 +817,12 @@ function setupControllers() {
     document.getElementById("backFromExam").onclick = () => show(viewHome);
 
     // Custom Practice Start
-    document.getElementById("startCustom").onclick = () => {
-        const type = document.getElementById("custType").value;
-        const count = Number(document.getElementById("custCount").value);
-        const max = Number(document.getElementById("custMax").value);
-        const op = document.getElementById("custOp").value;
+    const startCustomBtn = document.getElementById("startCustom");
+    if (startCustomBtn) startCustomBtn.onclick = () => {
+        const type = document.getElementById("custType")?.value || "math";
+        const count = Number(document.getElementById("custCount")?.value || 12);
+        const max = Number(document.getElementById("custMax")?.value || 1000);
+        const op = document.getElementById("custOp")?.value || "mix";
 
         // Reuse Math View for custom session
         mathP = [];
@@ -822,11 +831,13 @@ function setupControllers() {
             mathP = generateUnique(count, () => makeMath("mid", mode, max));
             show(viewMath);
             mathList.innerHTML = ""; mathP.forEach((p, i) => renderProblem(mathList, p, i));
-            document.getElementById("customBack").style.display = "none";
+            const cb = document.getElementById("customBack");
+            if (cb) cb.style.display = "none";
         } else {
             // Logic custom... (simplified for now, redirects to logic view)
             show(viewLogic);
-            document.getElementById("customBack").style.display = "none";
+            const cb = document.getElementById("customBack");
+            if (cb) cb.style.display = "none";
             document.getElementById("startLogic").click();
         }
     };
@@ -1008,8 +1019,10 @@ function renderCards() {
 
     // Custom Practice
     const custBack = document.getElementById("customBack");
-    if (document.getElementById("goCustom")) document.getElementById("goCustom").onclick = () => custBack.style.display = "flex";
-    document.getElementById("closeCustom").onclick = () => custBack.style.display = "none";
+    const goCustomBtn = document.getElementById("goCustom");
+    const closeCustomBtn = document.getElementById("closeCustom");
+    if (goCustomBtn && custBack) goCustomBtn.onclick = () => custBack.style.display = "flex";
+    if (closeCustomBtn && custBack) closeCustomBtn.onclick = () => custBack.style.display = "none";
 }
 
 function renderBadgesModal() {
@@ -1162,6 +1175,14 @@ const shopBack = document.getElementById("shopBack");
 document.getElementById("closeShop").onclick = () => shopBack.style.display = "none";
 shopBack.addEventListener("click", (e) => { if (e.target === shopBack) shopBack.style.display = "none"; });
 
+// Custom Modal
+const customBack = document.getElementById("customBack");
+if (customBack) {
+    customBack.addEventListener("click", (e) => {
+        if (e.target === customBack) customBack.style.display = "none";
+    });
+}
+
 function renderShop() {
     const grid = document.getElementById("shopGrid");
     grid.innerHTML = "";
@@ -1220,6 +1241,13 @@ window.equipItem = (itemId) => {
 const gameOverBack = document.getElementById("gameOverBack");
 document.getElementById("closeGameOver").onclick = () => gameOverBack.style.display = "none";
 gameOverBack.addEventListener("click", (e) => { if (e.target === gameOverBack) gameOverBack.style.display = "none"; });
+
+document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    [welcomeBack, themeBack, badgesBack, shopBack, gameOverBack, customBack, levelUpBack]
+        .filter(Boolean)
+        .forEach(modal => modal.style.display = "none");
+});
 
 // Boot
 initEventListeners();

@@ -151,6 +151,13 @@ button:active {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+    outline: 2px solid color-mix(in oklab, var(--accent) 70%, white);
+    outline-offset: 2px;
+}
+
 .btnPrimary {
     background: linear-gradient(135deg, var(--accent), var(--accent2));
     border: 1px solid rgba(255, 255, 255, .3);
@@ -302,6 +309,17 @@ button:active {
     font-weight: 990;
 }
 
+.tag {
+    align-self: flex-start;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 900;
+    border: 1px solid color-mix(in oklab, var(--accent) 40%, var(--line));
+    background: color-mix(in oklab, var(--accent) 25%, transparent);
+    color: #fff;
+}
+
 .card p {
     margin: 0;
     font-size: 12px;
@@ -396,6 +414,60 @@ label.small {
 
 .qList {
     transition: opacity 0.2s ease-in-out;
+}
+
+.jsonOutput {
+    width: 100%;
+    min-height: 260px;
+    margin-top: 10px;
+    border-radius: 14px;
+    border: 1px solid var(--line);
+    background: rgba(0, 0, 0, .2);
+    color: var(--text);
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.35;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    resize: vertical;
+}
+
+.vlaStudyList {
+    margin-top: 12px;
+    display: grid;
+    gap: 10px;
+}
+
+.vlaStudyItem {
+    background: var(--card2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+}
+
+.vlaStudyHead {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+}
+
+.vlaStudyQ {
+    font-size: 14px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.vlaStudyInput {
+    width: 100%;
+}
+
+.vlaStudyResult {
+    margin-top: 8px;
+    font-size: 12px;
+    color: var(--muted);
 }
 
 .q {
@@ -575,6 +647,23 @@ summary {
 .modalRow>* {
     flex: 1;
     min-width: 200px;
+}
+
+#customBack label {
+    display: inline-block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 900;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
 }
 
 .smallNote {

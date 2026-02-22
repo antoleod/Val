@@ -7,6 +7,7 @@
   <title>Valentina – Premium (FR/NL)</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
+  <script src="vlaanderen.js" defer></script>
 </head>
 
 <body>
@@ -114,6 +115,57 @@
         <div class="cards" id="moduleCards">
           <!-- Filled by JS (guaranteed) -->
         </div>
+      </div>
+
+      <div class="panel">
+        <div class="sectionTitle">
+          <h2>Cursos Vlaanderen - 4to Primaria</h2>
+          <div class="meta">Generador para una nina de 4to de primaria en Vlaanderen (Belgica).</div>
+        </div>
+        <div class="divider"></div>
+        <div class="toolbar">
+          <div class="left">
+            <label class="small">Tema</label>
+            <select id="vlaTopic">
+              <option value="all" selected>Todos</option>
+              <option value="numbers">Numbers and Operations</option>
+              <option value="fractions">Fractions & Decimals</option>
+              <option value="geometry">Geometry</option>
+              <option value="measurement">Measurement</option>
+              <option value="data">Data & Statistics</option>
+              <option value="word">Word Problems</option>
+            </select>
+            <label class="small">Nivel</label>
+            <select id="vlaLevel">
+              <option value="all" selected>Easy + Medium + Hard</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+            <label class="small">Idioma</label>
+            <select id="vlaLang">
+              <option value="es" selected>ES</option>
+              <option value="nl">NL</option>
+            </select>
+            <label class="small">Ejercicios por tema</label>
+            <select id="vlaCount">
+              <option>3</option>
+              <option selected>6</option>
+              <option>9</option>
+              <option>12</option>
+            </select>
+          </div>
+          <div class="right">
+            <button id="generateVlaSet" class="btnPrimary">Generar JSON</button>
+            <button id="renderVlaStudy">Estudiar ahora</button>
+            <button id="checkVlaStudy">Corregir</button>
+            <button id="copyVlaJson">Copiar</button>
+            <button id="downloadVlaJson">Descargar .json</button>
+          </div>
+        </div>
+        <div class="smallNote" id="vlaStatus">Listo para generar.</div>
+        <textarea id="vlaOutput" class="jsonOutput" spellcheck="false" readonly></textarea>
+        <div id="vlaStudyList" class="vlaStudyList"></div>
       </div>
 
 
@@ -471,6 +523,51 @@
       <div style="margin-top:16px; text-align:center"><button id="closeShop">Fermer</button></div>
     </div>
   </div>
+  <!-- CUSTOM PRACTICE MODAL -->
+  <div class="modalBack" id="customBack">
+    <div class="modal">
+      <h3>Atelier Personnalise</h3>
+      <p>Cree une session selon tes besoins.</p>
+      <div class="modalRow">
+        <div>
+          <label>Type</label>
+          <select id="custType">
+            <option value="math" selected>Maths</option>
+            <option value="logic">Logique</option>
+          </select>
+        </div>
+        <div>
+          <label>Nombre</label>
+          <select id="custCount">
+            <option>8</option>
+            <option selected>12</option>
+            <option>20</option>
+            <option>30</option>
+          </select>
+        </div>
+      </div>
+      <div class="modalRow" style="margin-top:10px">
+        <div>
+          <label>Max</label>
+          <input id="custMax" type="number" min="100" max="10000" step="10" value="1000" />
+        </div>
+        <div>
+          <label>Operation</label>
+          <select id="custOp">
+            <option value="mix" selected>Mix</option>
+            <option value="mul">Multiplication</option>
+            <option value="div">Division</option>
+          </select>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="modalRow">
+        <button id="startCustom" class="btnPrimary">Demarrer</button>
+        <button id="closeCustom">Fermer</button>
+      </div>
+    </div>
+  </div>
+
 </body>
 
 </html>
