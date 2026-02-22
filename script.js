@@ -1242,6 +1242,37 @@ const gameOverBack = document.getElementById("gameOverBack");
 document.getElementById("closeGameOver").onclick = () => gameOverBack.style.display = "none";
 gameOverBack.addEventListener("click", (e) => { if (e.target === gameOverBack) gameOverBack.style.display = "none"; });
 
+function initThemeDashboardActions() {
+    const bind = (id, fn) => {
+        const el = document.getElementById(id);
+        if (el) el.onclick = fn;
+    };
+
+    bind("dashGoMath", () => show(viewMath));
+    bind("dashGoLogic", () => show(viewLogic));
+    bind("dashGoStory", () => show(viewStory));
+    bind("dashGoExam", () => show(viewExam));
+
+    const openVlaTopic = (topic) => {
+        show(viewHome);
+        const topicSel = document.getElementById("vlaTopic");
+        const levelSel = document.getElementById("vlaLevel");
+        const langSel = document.getElementById("vlaLang");
+        if (topicSel) topicSel.value = topic;
+        if (levelSel) levelSel.value = "easy";
+        if (langSel) langSel.value = "es";
+        document.getElementById("generateVlaSet")?.click();
+        document.getElementById("vlaTopic")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    };
+
+    bind("themeNumbersBtn", () => openVlaTopic("numbers"));
+    bind("themeFractionsBtn", () => openVlaTopic("fractions"));
+    bind("themeGeometryBtn", () => openVlaTopic("geometry"));
+    bind("themeMeasurementBtn", () => openVlaTopic("measurement"));
+    bind("themeDataBtn", () => openVlaTopic("data"));
+    bind("themeWordBtn", () => openVlaTopic("word"));
+}
+
 document.addEventListener("keydown", (e) => {
     if (e.key !== "Escape") return;
     [welcomeBack, themeBack, badgesBack, shopBack, gameOverBack, customBack, levelUpBack]
@@ -1258,4 +1289,5 @@ renderDashboard();
 renderCoins();
 renderXpAndLevel(); // Initial render for level and XP
 renderPet(); // Initial render for pet
+initThemeDashboardActions();
 setTimeout(openWelcome, 200);
